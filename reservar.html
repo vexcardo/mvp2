@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apprendo — Reservar clases</title>
+<title>Laboratorio Bioquímico de Regeneración Celular</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -82,8 +82,8 @@ textarea { resize: vertical; min-height: 80px; }
 </head>
 <body>
 <div class="header">
-<div class="header-logo">📚 Apprendo</div>
-<div class="header-sub">Norma Costaganna · Clases particulares</div>
+<div class="header-logo">Laboratorio Químico de Regeneración Celular</div>
+<div class="header-sub"></div>
 </div>
 
 <!-- SCREEN 1: CALENDARIO -->
@@ -95,10 +95,10 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="step">3. Confirmar</div>
 </div>
 <div class="section-title">Elegí tu horario</div>
-<div class="section-sub">Elegí el horario en el que querés empezar tu clase. Si querés, después podés extenderla a 1,5 horas.</div>
+<div class="section-sub">Elegí el horario en el que desee reservar tu turno. La sesión dura apróximadamente 50 minutos..</div>
 <div class="duration-hint">
-<div class="duration-badge">Clase estándar: <strong>1 hora</strong></div>
-<div class="duration-badge">Extendida (opcional): <strong>1,5 horas</strong></div>
+<div class="duration-badge">
+<div class="duration-badge">
 </div>
 <div class="week-nav">
 <button class="btn-week" onclick="prevWeek()">‹</button>
@@ -110,7 +110,7 @@ textarea { resize: vertical; min-height: 80px; }
 <strong>Política de cancelación:</strong> más de 24 hs antes → sin cargo · entre 6 y 24 hs → 50% · menos de 6 hs → sin reembolso
 </div>
 <div class="link-misclases">
-¿Ya tenés clases reservadas? → <a href="mis-clases.html">Ver mis clases</a>
+¿Ya tenés una sesión reservada? → <a href="mis-clases.html">Ver mis turnos</a>
 </div>
 </div>
 <div class="pricing-panel" id="pricing-panel">
@@ -138,19 +138,11 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="form-card">
 <label>Tu nombre completo</label>
 <input type="text" id="f-parent" placeholder="Ej: María González" />
-<label>Nombre del alumno/a</label>
-<input type="text" id="f-student" placeholder="Ej: Lucas González" />
 <label>WhatsApp</label>
 <input type="tel" id="f-phone" placeholder="Ej: 11 1234-5678" oninput="onPhoneChange()" onblur="onPhoneChange()" />
 <div class="field-hint" id="phone-hint">Con tu WhatsApp calculamos el total a abonar.</div>
 <label>Email <span class="opt">(opcional — para recibir confirmación y recordatorios)</span></label>
 <input type="email" id="f-email" placeholder="Ej: maria@gmail.com" />
-<label>Materia y grado/año</label>
-<input type="text" id="f-subject" placeholder="Ej: Matemática · 3er grado" />
-<div class="interests-box">
-<div class="interests-title">💡 ¿Hay otras materias que le interesaría trabajar?</div>
-<div class="interests-sub">Opcional — ayuda a Norma a conocer mejor las necesidades de tu hijo/a</div>
-<textarea id="f-interests" placeholder="Ej: también necesita apoyo en Lengua e Inglés..."></textarea>
 </div>
 <div class="summary-box" id="form-summary"></div>
 <div class="error-msg" id="form-error"></div>
