@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apprendo — Panel de Norma</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #FAFAF8; color: #1A1A1A; font-size: 16px; }
+
+    .header {
+      background: #0A8F7E; padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left h1 { color: white; font-size: 22px; font-weight: 600; }
+    .header-left p { color: rgba(255,255,255,0.75); font-size: 14px; margin-top: 2px; }
+    .btn-logout {
+      background: rgba(255,255,255,0.2); color: white; border: none;
+      border-radius: 10px; padding: 10px 18px; font-size: 15px;
+      cursor: pointer; font-family: inherit;
+    }
+
+    /* LOGIN */
+    .login-wrap {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .login-logo { font-size: 48px; margin-bottom: 12px; }
+    .login-title { font-size: 26px; font-weight: 700; color: #0A8F7E; margin-bottom: 4px; }
+    .login-sub { font-size: 15px; color: #888; margin-bottom: 32px; }
+    .login-card {
+      background: white; border-radius: 16px; border: 1px solid #E5E5E3;
+      padding: 32px; width: 100%; max-width: 380px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    .login-card label { display: block; font-size: 15px; font-weight: 500; color: #444; margin-bottom: 8px; }
+    .login-card input {
+      width: 100%; border: 1.5px solid #DDD; border-radius: 10px;
+      padding: 14px 16px; font-size: 16px; font-family: inherit;
+      outline: none; margin-bottom: 16px;
+    }
+    .login-card input:focus { border-color: #0A8F7E; }
+    .login-error { color: #C0392B; font-size: 14px; margin-bottom: 12px; display: none; }
+    .btn-green {
+      width: 100%; background: #0A8F7E; color: white; border: none;
+      border-radius: 12px; padding: 16px; font-size: 17px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-green:hover { background: #076D60; }
+    .btn-green:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* MAIN PANEL */
+    .main { display: none; }
+    .container { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .stat-card {
+      background: white; border-radius: 14px; border: 1px solid #E5E5E3;
+      padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .stat-icon { font-size: 28px; margin-bottom: 8px; }
+    .stat-val { font-size: 32px; font-weight: 700; color: #1A1A1A; }
+    .stat-val.green { color: #0A8F7E; }
+    .stat-label { font-size: 14px; color: #888; margin-top: 4px; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #E5E5E3; margin-bottom: 20px; }
+    .tab {
+      padding: 12px 20px; font-size: 15px; color: #888; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      font-weight: 500;
+    }
+    .tab.active { color: #0A8F7E; border-color: #0A8F7E; }
+
+    /* RESERVATIONS TABLE */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .search-bar {
+      width: 100%; border: 1.5px solid #E5E5E3; border-radius: 10px;
+      padding: 12px 16px; font-size: 15px; font-family: inherit;
+      outline: none; margin-bottom: 16px;
+    }
+    .search-bar:focus { border-color: #0A8F7E; }
+
+    .res-card {
+      background: white; border-radius: 14px; border: 1px solid #E5E5E3;
+      padding: 18px 20px; margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      transition: border-color .15s;
+    }
+    .res-card:hover { border-color: #0A8F7E; }
+    .res-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .res-names h3 { font-size: 18px; font-weight: 600; color: #1A1A1A; }
+    .res-names p { font-size: 14px; color: #888; margin-top: 2px; }
+    .badge {
+      display: inline-block; border-radius: 20px; padding: 4px 12px;
+      font-size: 13px; font-weight: 500;
+    }
+    .badge-pending { background: #FEF3E0; color: #B8720E; }
+    .badge-paid { background: #E6F5F3; color: #0A8F7E; }
+    .badge-cancelled { background: #FEE2E2; color: #C0392B; }
+
+    .res-slots { margin: 12px 0; }
+    .res-slot-item {
+      display: inline-block; background: #F5F5F3; border-radius: 6px;
+      padding: 4px 10px; font-size: 13px; color: #555; margin: 3px 3px 3px 0;
+    }
+    .res-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F0EE; }
+    .res-contact { font-size: 14px; color: #555; }
+    .res-contact a { color: #0A8F7E; text-decoration: none; }
+    .res-amount { font-size: 20px; font-weight: 700; color: #1A1A1A; }
+    .res-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm {
+      border-radius: 8px; padding: 8px 14px; font-size: 14px;
+      cursor: pointer; font-family: inherit; border: none; font-weight: 500;
+    }
+    .btn-confirm { background: #E6F5F3; color: #0A8F7E; border: 1.5px solid #0A8F7E; }
+    .btn-cancel-res { background: #FEE2E2; color: #C0392B; border: 1.5px solid #FECACA; }
+    .btn-whatsapp { background: #25D366; color: white; }
+
+    .empty { text-align: center; padding: 48px 20px; color: #BBB; font-size: 16px; }
+    .loading { text-align: center; padding: 32px; color: #BBB; font-size: 15px; }
+
+    /* BLOCK SLOTS */
+    .week-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .week-nav button { background: white; border: 1px solid #DDD; border-radius: 8px; width: 38px; height: 38px; font-size: 18px; cursor: pointer; }
+    .week-nav span { font-size: 16px; font-weight: 500; }
+    .block-calendar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .block-day { }
+    .block-day-header { text-align: center; font-size: 13px; font-weight: 500; color: #888; margin-bottom: 6px; }
+    .block-day-date { text-align: center; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .block-slot {
+      border: 1.5px solid #E5E5E3; border-radius: 8px; padding: 10px 4px;
+      text-align: center; font-size: 14px; cursor: pointer;
+      margin-bottom: 6px; background: white; transition: all .15s;
+    }
+    .block-slot.blocked { background: #FEE2E2; border-color: #FECACA; color: #C0392B; }
+    .block-slot.has-booking { background: #E6F5F3; border-color: #0A8F7E; color: #0A8F7E; cursor: default; }
+    .block-slot:hover:not(.has-booking) { border-color: #C0392B; background: #FEE2E2; }
+    .block-legend { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .block-legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-logo">📚</div>
+  <div class="login-title">Apprendo</div>
+  <div class="login-sub">Panel de Norma Costaganna</div>
+  <div class="login-card">
+    <label>Contraseña</label>
+    <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" />
+    <div class="login-error" id="login-error">Contraseña incorrecta.</div>
+    <button class="btn-green" onclick="doLogin()">Ingresar</button>
+  </div>
+</div>
+
+<!-- MAIN PANEL -->
+<div id="main-panel" class="main">
+  <div class="header">
+    <div class="header-left">
+      <h1>📚 Apprendo — Panel de Norma</h1>
+      <p id="today-label"></p>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="container">
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-val green" id="stat-pending">—</div>
+        <div class="stat-label">Reservas pendientes de pago</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" id="stat-paid">—</div>
+        <div class="stat-label">Reservas confirmadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👩‍🎓</div>
+        <div class="stat-val" id="stat-students">—</div>
+        <div class="stat-label">Alumnos distintos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-val" id="stat-revenue">—</div>
+        <div class="stat-label">Total cobrado (confirmado)</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('reservas')">Reservas</div>
+      <div class="tab" onclick="showTab('calendario')">Bloquear horarios</div>
+    </div>
+
+    <!-- TAB: RESERVAS -->
+    <div class="tab-content active" id="tab-reservas">
+      <input class="search-bar" type="text" placeholder="🔍 Buscar por nombre, alumno o teléfono..." oninput="filterReservations(this.value)" />
+      <div id="reservations-list"><div class="loading">Cargando reservas...</div></div>
+    </div>
+
+    <!-- TAB: CALENDARIO -->
+    <div class="tab-content" id="tab-calendario">
+      <p style="font-size:15px;color:#666;margin-bottom:16px;">
+        Hacé click en un horario para bloquearlo. Los horarios en verde ya tienen una reserva y no se pueden bloquear.
+      </p>
+      <div class="block-legend">
+        <div class="block-legend-item"><div class="legend-dot" style="background:#F5F5F3;border:1px solid #DDD;"></div>Disponible</div>
+        <div class="block-legend-item"><div class="legend-dot" style="background:#FEE2E2;border:1px solid #FECACA;"></div>Bloqueado</div>
+        <div class="block-legend-item"><div class="legend-dot" style="background:#E6F5F3;border:1px solid #0A8F7E;"></div>Con reserva</div>
+      </div>
+      <div class="week-nav">
+        <button onclick="blockPrevWeek()">‹</button>
+        <span id="block-week-label"></span>
+        <button onclick="blockNextWeek()">›</button>
+      </div>
+      <div class="block-calendar" id="block-calendar"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ivarjjotugjdsgapcrpt.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2YXJqam90dWdqZHNnYXBjcnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMDIyODUsImV4cCI6MjA5OTc3ODI4NX0.uK1wOrzJnYIxnTT_Jgirme5kPBa3IRE1frGze2vhuQA'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// Contraseña simple para el panel de Norma
+const PANEL_PASSWORD = 'apprendo2024'
+
+const SLOTS_BY_DAY = {
+  0: [],
+  1: ['10:00','11:00','18:00','19:00'],
+  2: ['10:00','11:00','18:00','19:00'],
+  3: ['10:00','11:00','18:00','19:00'],
+  4: ['10:00','11:00','18:00','19:00'],
+  5: ['10:00','11:00','18:00','19:00'],
+  6: ['10:00','11:00','12:00']
+}
+
+const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+let allReservations = []
+let blockedSlots = []
+let blockWeekOffset = 0
+
+// LOGIN
+function doLogin() {
+  const pass = document.getElementById('login-pass').value
+  if (pass === PANEL_PASSWORD) {
+    sessionStorage.setItem('norma_auth', '1')
+    showPanel()
+  } else {
+    document.getElementById('login-error').style.display = 'block'
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('norma_auth')
+  location.reload()
+}
+
+function showPanel() {
+  document.getElementById('login-screen').style.display = 'none'
+  document.getElementById('main-panel').style.display = 'block'
+  const today = new Date()
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+  document.getElementById('today-label').textContent =
+    `${days[today.getDay()]} ${today.getDate()} de ${MONTHS[today.getMonth()]} de ${today.getFullYear()}`
+  loadReservations()
+  loadBlocked()
+}
+
+// Check auth on load
+if (sessionStorage.getItem('norma_auth') === '1') showPanel()
+
+// TABS
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['reservas','calendario']
+    t.classList.toggle('active', names[i] === name)
+  })
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
+  document.getElementById('tab-' + name).classList.add('active')
+  if (name === 'calendario') renderBlockCalendar()
+}
+
+// RESERVATIONS
+async function loadReservations() {
+  const { data } = await sb.from('reservations').select('*').order('created_at', { ascending: false })
+  allReservations = data || []
+  renderReservations(allReservations)
+  updateStats()
+}
+
+function updateStats() {
+  const pending = allReservations.filter(r => r.status === 'pending_payment')
+  const paid = allReservations.filter(r => r.status === 'paid')
+  const students = [...new Set(allReservations.map(r => r.student_name))].length
+  const revenue = paid.reduce((s, r) => s + (r.total_amount || 0), 0)
+  document.getElementById('stat-pending').textContent = pending.length
+  document.getElementById('stat-paid').textContent = paid.length
+  document.getElementById('stat-students').textContent = students
+  document.getElementById('stat-revenue').textContent = revenue > 0 ? '$' + revenue.toLocaleString('es-AR') : '$0'
+}
+
+function filterReservations(q) {
+  if (!q) { renderReservations(allReservations); return }
+  const filtered = allReservations.filter(r =>
+    r.parent_name?.toLowerCase().includes(q.toLowerCase()) ||
+    r.student_name?.toLowerCase().includes(q.toLowerCase()) ||
+    r.phone?.includes(q)
+  )
+  renderReservations(filtered)
+}
+
+function formatSlotKey(key) {
+  const [date, time] = key.split('_')
+  const d = new Date(date + 'T12:00:00')
+  return `${DAY_NAMES[d.getDay()]} ${d.getDate()}/${d.getMonth()+1} · ${time} hs`
+}
+
+function formatARS(n) { return '$' + (n||0).toLocaleString('es-AR') }
+
+function statusBadge(status) {
+  if (status === 'paid') return '<span class="badge badge-paid">✓ Pagado</span>'
+  if (status === 'cancelled') return '<span class="badge badge-cancelled">Cancelado</span>'
+  return '<span class="badge badge-pending">⏳ Pendiente de pago</span>'
+}
+
+function renderReservations(list) {
+  const el = document.getElementById('reservations-list')
+  if (!list.length) { el.innerHTML = '<div class="empty">No hay reservas aún.</div>'; return }
+  el.innerHTML = list.map(r => {
+    const slots = Array.isArray(r.slots) ? r.slots.map(formatSlotKey).join('</div><div class="res-slot-item">') : '—'
+    const waLink = r.phone ? `https://wa.me/549${r.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${r.parent_name}! Te escribo por la reserva de clases de ${r.student_name} con Norma Costaganna (Apprendo).`)}` : '#'
+    return `
+      <div class="res-card" id="res-${r.id}">
+        <div class="res-top">
+          <div class="res-names">
+            <h3>${r.student_name}</h3>
+            <p>Padre/Madre: ${r.parent_name} ${r.subject ? '· ' + r.subject : ''}</p>
+          </div>
+          ${statusBadge(r.status)}
+        </div>
+        <div class="res-slots">
+          <div class="res-slot-item">${slots}</div>
+        </div>
+        <div class="res-footer">
+          <div class="res-contact">
+            📱 <a href="${waLink}" target="_blank">${r.phone}</a>
+            <span style="margin-left:12px;color:#BBB;font-size:13px;">${new Date(r.created_at).toLocaleDateString('es-AR')}</span>
+          </div>
+          <div class="res-amount">${formatARS(r.total_amount)}</div>
+        </div>
+        <div class="res-actions" style="margin-top:10px;">
+          ${r.status !== 'paid' && r.status !== 'cancelled' ? `<button class="btn-sm btn-confirm" onclick="confirmPayment('${r.id}')">✓ Marcar como pagado</button>` : ''}
+          ${r.status !== 'cancelled' ? `<button class="btn-sm btn-cancel-res" onclick="cancelReservation('${r.id}')">✕ Cancelar</button>` : ''}
+          <a href="${waLink}" target="_blank"><button class="btn-sm btn-whatsapp">💬 WhatsApp</button></a>
+        </div>
+      </div>
+    `
+  }).join('')
+}
+
+async function confirmPayment(id) {
+  await sb.from('reservations').update({ status: 'paid' }).eq('id', id)
+  loadReservations()
+}
+
+async function cancelReservation(id) {
+  if (!confirm('¿Cancelar esta reserva?')) return
+  await sb.from('reservations').update({ status: 'cancelled' }).eq('id', id)
+  loadReservations()
+}
+
+// BLOCK CALENDAR
+async function loadBlocked() {
+  const { data } = await sb.from('blocked_slots').select('date, time')
+  blockedSlots = (data || []).map(b => b.date + '_' + b.time)
+}
+
+function getWeekDates(offset) {
+  const today = new Date(); today.setHours(0,0,0,0)
+  const dow = today.getDay()
+  const diff = dow === 0 ? -6 : 1 - dow
+  const monday = new Date(today)
+  monday.setDate(today.getDate() + diff + offset * 7)
+  const days = []
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    days.push(d)
+  }
+  return days
+}
+
+function dateStr(d) { return d.toISOString().split('T')[0] }
+
+async function renderBlockCalendar() {
+  await loadBlocked()
+  const days = getWeekDates(blockWeekOffset)
+  document.getElementById('block-week-label').textContent =
+    `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} — ${days[5].getDate()} ${MONTHS[days[5].getMonth()]}`
+
+  // Get bookings for this week
+  const { data: reservations } = await sb.from('reservations')
+    .select('slots').neq('status', 'cancelled')
+  const bookedKeys = []
+  ;(reservations||[]).forEach(r => { if(Array.isArray(r.slots)) r.slots.forEach(k => bookedKeys.push(k)) })
+
+  const cal = document.getElementById('block-calendar')
+  cal.innerHTML = ''
+
+  days.forEach(day => {
+    const dow = day.getDay()
+    const times = SLOTS_BY_DAY[dow] || []
+    const col = document.createElement('div')
+    col.className = 'block-day'
+    col.innerHTML = `
+      <div class="block-day-header">${DAY_NAMES[dow]}</div>
+      <div class="block-day-date">${day.getDate()}</div>
+    `
+    if (!times.length) {
+      col.innerHTML += '<div style="text-align:center;color:#DDD;font-size:12px;">—</div>'
+    } else {
+      times.forEach(time => {
+        const key = dateStr(day) + '_' + time
+        const isBlocked = blockedSlots.includes(key)
+        const isBooked = bookedKeys.includes(key)
+        const div = document.createElement('div')
+        div.className = 'block-slot' + (isBlocked ? ' blocked' : isBooked ? ' has-booking' : '')
+        div.textContent = time
+        div.title = isBooked ? 'Tiene una reserva' : isBlocked ? 'Bloqueado — click para desbloquear' : 'Click para bloquear'
+        if (!isBooked) div.onclick = () => toggleBlock(key, day, time)
+        col.appendChild(div)
+      })
+    }
+    cal.appendChild(col)
+  })
+}
+
+async function toggleBlock(key, day, time) {
+  const date = dateStr(day)
+  if (blockedSlots.includes(key)) {
+    await sb.from('blocked_slots').delete().eq('date', date).eq('time', time)
+  } else {
+    await sb.from('blocked_slots').insert({ date, time })
+  }
+  renderBlockCalendar()
+}
+
+function blockPrevWeek() { blockWeekOffset--; renderBlockCalendar() }
+function blockNextWeek() { blockWeekOffset++; renderBlockCalendar() }
+</script>
+</body>
+</html>

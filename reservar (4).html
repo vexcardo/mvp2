@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apprendo — Reservar clases</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #FAFAF8; color: #1A1A1A; }
+.header { background: #0A8F7E; padding: 16px 20px; }
+.header-logo { font-size: 20px; font-weight: 600; color: white; }
+.header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px 16px 120px; }
+.steps { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid #E5E5E3; }
+.step { flex: 1; text-align: center; font-size: 13px; color: #AAA; padding-bottom: 12px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.step.active { color: #0A8F7E; border-color: #0A8F7E; font-weight: 500; }
+.step.done { color: #0A8F7E; border-color: #0A8F7E; }
+.section-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.section-sub { font-size: 14px; color: #888; margin-bottom: 20px; }
+.duration-hint { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.duration-badge { background: white; border: 1.5px solid #E5E5E3; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #666; }
+.duration-badge strong { color: #0A8F7E; }
+.week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.week-label { font-size: 15px; font-weight: 500; }
+.btn-week { background: white; border: 1px solid #DDD; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.calendar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.day-header { text-align: center; font-size: 12px; font-weight: 500; color: #888; margin-bottom: 6px; }
+.day-header.today-h { color: #0A8F7E; }
+.day-date { font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 8px; }
+.day-date.today-d { background: #0A8F7E; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+.slot { border: 1.5px solid #E5E5E3; border-radius: 8px; padding: 9px 4px; text-align: center; font-size: 12.5px; cursor: pointer; margin-bottom: 6px; background: white; transition: all .15s; font-weight: 500; }
+.slot:hover { border-color: #0A8F7E; background: #E6F5F3; }
+.slot.selected { background: #0A8F7E; color: white; border-color: #0A8F7E; }
+.duration-choice { border: 1.5px solid #0A8F7E; border-radius: 8px; padding: 5px; margin-bottom: 6px; background: #E6F5F3; }
+.duration-choice-label { font-size: 10px; color: #076D60; text-align: center; margin-bottom: 4px; font-weight: 600; }
+.btn-duration-mini { display: block; width: 100%; background: white; border: 1px solid #0A8F7E; color: #076D60; border-radius: 6px; padding: 6px 2px; font-size: 11px; font-weight: 600; cursor: pointer; margin-bottom: 4px; font-family: inherit; }
+.btn-duration-mini:hover { background: #0A8F7E; color: white; }
+.btn-duration-cancel { display: block; width: 100%; background: none; border: none; color: #AAA; font-size: 10px; cursor: pointer; font-family: inherit; text-align: center; }
+.slot-empty { text-align: center; color: #DDD; font-size: 12px; margin-top: 8px; }
+.pricing-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #E5E5E3; padding: 14px 20px; box-shadow: 0 -4px 16px rgba(0,0,0,0.08); display: none; z-index: 100; }
+.pricing-panel.visible { display: block; }
+.pricing-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 16px; }
+.pricing-info { flex: 1; }
+.pricing-count { font-size: 14px; font-weight: 500; }
+.pricing-combo { font-size: 13px; color: #0A8F7E; font-weight: 500; margin-top: 1px; }
+.btn-continuar { background: #0A8F7E; color: white; border: none; border-radius: 12px; padding: 14px 28px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-continuar:hover { background: #076D60; }
+.screen { display: none; }
+.screen.active { display: block; }
+.form-card { background: white; border-radius: 16px; border: 1px solid #E5E5E3; padding: 24px; max-width: 500px; }
+label { display: block; font-size: 14px; font-weight: 500; color: #444; margin-bottom: 6px; margin-top: 16px; }
+label:first-child { margin-top: 0; }
+label .opt { font-weight: 400; color: #AAA; font-size: 12px; }
+input, textarea { width: 100%; border: 1px solid #DDD; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit; outline: none; transition: border-color .15s; }
+input:focus, textarea:focus { border-color: #0A8F7E; box-shadow: 0 0 0 3px rgba(10,143,126,0.1); }
+textarea { resize: vertical; min-height: 80px; }
+.field-hint { font-size: 12px; color: #AAA; margin-top: 5px; }
+.interests-box { background: #F5F5F3; border-radius: 12px; padding: 16px; margin-top: 20px; border: 1px solid #E5E5E3; }
+.interests-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 4px; }
+.interests-sub { font-size: 12px; color: #888; margin-bottom: 10px; }
+.summary-box { background: #E6F5F3; border: 1px solid #0A8F7E; border-radius: 12px; padding: 16px; margin-top: 20px; }
+.summary-title { font-size: 12px; font-weight: 600; color: #0A8F7E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.summary-slots { font-size: 13px; color: #444; line-height: 1.8; margin-bottom: 10px; }
+.summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: #1A1A1A; border-top: 1px solid rgba(10,143,126,0.2); padding-top: 10px; }
+.summary-total.pending { color: #B8720E; font-size: 14px; font-weight: 500; }
+.summary-price-detail { font-size: 13px; color: #666; margin-bottom: 6px; }
+.btn-back { background: white; border: 1px solid #DDD; border-radius: 10px; padding: 10px 18px; font-size: 14px; cursor: pointer; font-family: inherit; margin-bottom: 20px; }
+.btn-pagar { width: 100%; background: #0A8F7E; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 17px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 16px; }
+.btn-pagar:hover { background: #076D60; }
+.btn-pagar:disabled { opacity: .6; cursor: not-allowed; }
+.error-msg { color: #C0392B; font-size: 14px; margin-top: 10px; display: none; }
+.policy { background: #F5F5F3; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #666; line-height: 1.8; margin-top: 16px; }
+.link-misclases { text-align: center; font-size: 13px; color: #AAA; margin-top: 12px; }
+.link-misclases a { color: #0A8F7E; font-weight: 500; text-decoration: none; }
+@media (max-width: 580px) {
+.calendar { grid-template-columns: repeat(3, 1fr); }
+.pricing-inner { flex-direction: column; gap: 8px; }
+.btn-continuar { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="header-logo">📚 Apprendo</div>
+<div class="header-sub">Norma Costaganna · Clases particulares</div>
+</div>
+
+<!-- SCREEN 1: CALENDARIO -->
+<div class="screen active" id="screen-calendar">
+<div class="container">
+<div class="steps">
+<div class="step active">1. Elegí tu horario</div>
+<div class="step">2. Tus datos</div>
+<div class="step">3. Confirmar</div>
+</div>
+<div class="section-title">Elegí tu horario</div>
+<div class="section-sub">Elegí el horario en el que querés empezar tu clase. Si querés, después podés extenderla a 1,5 horas.</div>
+<div class="duration-hint">
+<div class="duration-badge">Clase estándar: <strong>1 hora</strong></div>
+<div class="duration-badge">Extendida (opcional): <strong>1,5 horas</strong></div>
+</div>
+<div class="week-nav">
+<button class="btn-week" onclick="prevWeek()">‹</button>
+<span class="week-label" id="week-label"></span>
+<button class="btn-week" onclick="nextWeek()">›</button>
+</div>
+<div class="calendar" id="calendar"></div>
+<div class="policy">
+<strong>Política de cancelación:</strong> más de 24 hs antes → sin cargo · entre 6 y 24 hs → 50% · menos de 6 hs → sin reembolso
+</div>
+<div class="link-misclases">
+¿Ya tenés clases reservadas? → <a href="mis-clases.html">Ver mis clases</a>
+</div>
+</div>
+<div class="pricing-panel" id="pricing-panel">
+<div class="pricing-inner">
+<div class="pricing-info">
+<div class="pricing-count" id="p-count"></div>
+<div class="pricing-combo" id="p-combo"></div>
+</div>
+<button class="btn-continuar" onclick="goToForm()">Continuar →</button>
+</div>
+</div>
+</div>
+
+<!-- SCREEN 2: FORMULARIO -->
+<div class="screen" id="screen-form">
+<div class="container">
+<div class="steps">
+<div class="step done">1. Horario ✓</div>
+<div class="step active">2. Tus datos</div>
+<div class="step">3. Confirmar</div>
+</div>
+<button class="btn-back" onclick="goBack()">← Volver al calendario</button>
+<div class="section-title">Tus datos</div>
+<div class="section-sub">Para confirmar la reserva necesitamos tus datos de contacto.</div>
+<div class="form-card">
+<label>Tu nombre completo</label>
+<input type="text" id="f-parent" placeholder="Ej: María González" />
+<label>Nombre del alumno/a</label>
+<input type="text" id="f-student" placeholder="Ej: Lucas González" />
+<label>WhatsApp</label>
+<input type="tel" id="f-phone" placeholder="Ej: 11 1234-5678" oninput="onPhoneChange()" onblur="onPhoneChange()" />
+<div class="field-hint" id="phone-hint">Con tu WhatsApp calculamos el total a abonar.</div>
+<label>Email <span class="opt">(opcional — para recibir confirmación y recordatorios)</span></label>
+<input type="email" id="f-email" placeholder="Ej: maria@gmail.com" />
+<label>Materia y grado/año</label>
+<input type="text" id="f-subject" placeholder="Ej: Matemática · 3er grado" />
+<div class="interests-box">
+<div class="interests-title">💡 ¿Hay otras materias que le interesaría trabajar?</div>
+<div class="interests-sub">Opcional — ayuda a Norma a conocer mejor las necesidades de tu hijo/a</div>
+<textarea id="f-interests" placeholder="Ej: también necesita apoyo en Lengua e Inglés..."></textarea>
+</div>
+<div class="summary-box" id="form-summary"></div>
+<div class="error-msg" id="form-error"></div>
+<button class="btn-pagar" id="btn-submit" onclick="submitReservation()">Confirmar reserva →</button>
+</div>
+</div>
+</div>
+
+<!-- SCREEN 3: PAGO / TRANSFERENCIA -->
+<div class="screen" id="screen-success">
+<div class="container" style="max-width:540px;">
+<div class="steps">
+<div class="step done">1. Horario ✓</div>
+<div class="step done">2. Datos ✓</div>
+<div class="step active">3. Confirmar</div>
+</div>
+<div style="text-align:center;margin-bottom:28px;">
+<div style="font-size:52px;margin-bottom:10px;">🎉</div>
+<div style="font-size:24px;font-weight:700;color:#0A8F7E;margin-bottom:6px;">¡Reserva registrada!</div>
+<div style="font-size:15px;color:#666;" id="success-detail"></div>
+</div>
+<div style="background:white;border-radius:16px;border:1.5px solid #0A8F7E;padding:22px;margin-bottom:14px;">
+<div style="font-size:12px;font-weight:600;color:#0A8F7E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;">Datos para la transferencia</div>
+<div style="display:flex;flex-direction:column;gap:0;">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F0F0EE;">
+<span style="font-size:14px;color:#888;">Titular</span>
+<span style="font-size:14px;font-weight:500;">Norma Teresa Costaganna</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F0F0EE;">
+<span style="font-size:14px;color:#888;">Alias</span>
+<span style="font-size:16px;font-weight:700;color:#0A8F7E;cursor:pointer;" onclick="copyText('normacostag.mp',this)">normacostag.mp 📋</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+<span style="font-size:14px;color:#888;">CVU</span>
+<span style="font-size:13px;font-weight:500;cursor:pointer;" onclick="copyText('0000003100097107300876',this)">0000003100097107300876 📋</span>
+</div>
+</div>
+</div>
+<div style="background:white;border-radius:14px;border:1px solid #E5E5E3;padding:16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+<div>
+<div style="font-size:13px;color:#888;margin-bottom:2px;">Total a transferir</div>
+<div style="font-size:13px;color:#0A8F7E;" id="success-combo"></div>
+</div>
+<div style="font-size:28px;font-weight:700;" id="success-amount"></div>
+</div>
+<div style="background:#FEF3E0;border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:14px;color:#7A4B08;line-height:1.6;" id="pending-price-note">
+💡 Una vez realizada la transferencia, enviá el comprobante por WhatsApp a Norma para confirmar tu lugar.
+</div>
+<a id="whatsapp-btn" href="#" target="_blank" style="display:block;text-decoration:none;margin-bottom:10px;">
+<button style="width:100%;background:#25D366;color:white;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;">
+💬 Enviar comprobante por WhatsApp
+</button>
+</a>
+<button id="btn-ics" onclick="downloadICS()" style="width:100%;background:white;color:#0A8F7E;border:1.5px solid #0A8F7E;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+📅 Agregar clase a mi calendario (.ics)
+</button>
+<button onclick="window.location.reload()" style="width:100%;background:white;color:#888;border:1px solid #DDD;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;font-family:inherit;">
+Hacer otra reserva
+</button>
+<div style="text-align:center;margin-top:16px;font-size:13px;color:#AAA;">
+¿Necesitás cancelar o ver tus clases? → <a href="mis-clases.html" style="color:#0A8F7E;font-weight:500;text-decoration:none;">Gestionar mis clases</a>
+</div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ivarjjotugjdsgapcrpt.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2YXJqam90dWdqZHNnYXBjcnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMDIyODUsImV4cCI6MjA5OTc3ODI4NX0.uK1wOrzJnYIxnTT_Jgirme5kPBa3IRE1frGze2vhuQA'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+const BLOCK_MINUTES = 30
+const STANDARD_MINUTES = 60
+const EXTENDED_MINUTES = 90
+const NORMA_WA = '5491128751300'
+
+// Ventanas horarias por día (en minutos desde 00:00). Dentro de cada ventana
+// se ofrecen horarios "en punto" salvo que uno anterior haya corrido el próximo turno libre.
+const WINDOWS_BY_DAY = {
+  0: [],
+  1: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
+  2: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
+  3: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
+  4: [{ start: '16:30', end: '20:00' }],
+  5: [{ start: '17:00', end: '20:00' }],
+  6: []
+}
+
+const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+let selection = null   // { date, dow, start, duration, keys: ['10:00','10:30',...] }
+let pendingKey = null   // date_time del slot esperando que elijan duración
+let bookedKeys = []
+let blockedKeys = []
+let weekOffset = 0
+let currentICS = ''
+let ratePerBlock = null
+let rateLookupToken = 0
+
+function dateStr(d) { return d.toISOString().split('T')[0] }
+function isToday(d) { return dateStr(d) === dateStr(new Date()) }
+function timeToMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m }
+function minToTime(m) { const h = Math.floor(m/60), mm = m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0') }
+function isPastDT(d, time) { return new Date(dateStr(d) + 'T' + time) <= new Date() }
+function normalizePhone(p) { return (p || '').replace(/\D/g, '') }
+function formatARS(n) { return '$' + Number(n).toLocaleString('es-AR') }
+
+function getWeekDates() {
+  const today = new Date(); today.setHours(0,0,0,0)
+  const dow = today.getDay()
+  const diff = dow === 0 ? -6 : 1 - dow
+  const monday = new Date(today)
+  monday.setDate(today.getDate() + diff + weekOffset * 7)
+  const days = []
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i); days.push(d)
+  }
+  return days
+}
+
+async function loadOccupied() {
+  const days = getWeekDates()
+  const from = dateStr(days[0]), to = dateStr(days[4])
+  const { data: res } = await sb.from('reservations').select('slots').neq('status','cancelled')
+  bookedKeys = []
+  ;(res||[]).forEach(r => { if(Array.isArray(r.slots)) r.slots.forEach(k => bookedKeys.push(k)) })
+  const { data: blk } = await sb.from('blocked_slots').select('date,time').gte('date',from).lte('date',to)
+  blockedKeys = (blk||[]).map(b => b.date+'_'+b.time)
+}
+
+function isFree(day, timeStr) {
+  const key = dateStr(day) + '_' + timeStr
+  if (isPastDT(day, timeStr)) return false
+  if (bookedKeys.includes(key)) return false
+  if (blockedKeys.includes(key)) return false
+  return true
+}
+
+// Devuelve los horarios de inicio que hay que mostrar como botón para un día/ventana:
+// los horarios "en punto" libres, más cualquier media hora libre que quedó como
+// próximo turno disponible después de una reserva extendida.
+function getStartOptions(day, win) {
+  const startMin = timeToMin(win.start)
+  const endMin = timeToMin(win.end)
+  const options = []
+  for (let m = startMin; m <= endMin - STANDARD_MINUTES; m += BLOCK_MINUTES) {
+    const t = minToTime(m)
+    if (!isFree(day, t)) continue
+    const onTheHour = (m % 60 === 0)
+    const prevFree = m === startMin ? true : isFree(day, minToTime(m - BLOCK_MINUTES))
+    if (!onTheHour && prevFree) continue // no es horario "en punto" ni un próximo turno liberado
+    // cuánto dura el hueco libre a partir de acá (para saber si se puede ofrecer 1,5 hs)
+    let freeMin = 0
+    for (let k = m; k < endMin; k += BLOCK_MINUTES) {
+      if (!isFree(day, minToTime(k))) break
+      freeMin += BLOCK_MINUTES
+    }
+    if (freeMin < STANDARD_MINUTES) continue
+    options.push({ time: t, maxMinutes: freeMin >= EXTENDED_MINUTES ? EXTENDED_MINUTES : STANDARD_MINUTES })
+  }
+  return options
+}
+
+async function renderCalendar() {
+  await loadOccupied()
+  const days = getWeekDates()
+  document.getElementById('week-label').textContent =
+    `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} — ${days[4].getDate()} ${MONTHS[days[4].getMonth()]}`
+  const cal = document.getElementById('calendar')
+  cal.innerHTML = ''
+  days.forEach(day => {
+    const dow = day.getDay()
+    const windows = WINDOWS_BY_DAY[dow] || []
+    const isT = isToday(day)
+    const col = document.createElement('div')
+    col.innerHTML = `
+      <div class="day-header ${isT?'today-h':''}">${DAY_NAMES[dow]}</div>
+      <div class="${isT?'day-date today-d':'day-date'}">${day.getDate()}</div>
+    `
+    let anyOption = false
+    windows.forEach(win => {
+      const opts = getStartOptions(day, win)
+      opts.forEach(opt => {
+        anyOption = true
+        const key = dateStr(day) + '_' + opt.time
+        const isSelected = selection && selection.date === dateStr(day) && selection.start === opt.time
+        const isPending = pendingKey === key
+
+        if (isSelected) {
+          const endTime = minToTime(timeToMin(opt.time) + selection.duration)
+          const div = document.createElement('div')
+          div.className = 'slot selected'
+          div.textContent = `${opt.time} – ${endTime}`
+          div.onclick = () => clearSelection()
+          col.appendChild(div)
+        } else if (isPending) {
+          const box = document.createElement('div')
+          box.className = 'duration-choice'
+          box.innerHTML = `<div class="duration-choice-label">${opt.time}</div>`
+          const btn1h = document.createElement('button')
+          btn1h.className = 'btn-duration-mini'
+          btn1h.textContent = '1 hora'
+          btn1h.onclick = (e) => { e.stopPropagation(); chooseDuration(day, dow, opt.time, STANDARD_MINUTES) }
+          box.appendChild(btn1h)
+          if (opt.maxMinutes >= EXTENDED_MINUTES) {
+            const btn15 = document.createElement('button')
+            btn15.className = 'btn-duration-mini'
+            btn15.textContent = '1,5 horas'
+            btn15.onclick = (e) => { e.stopPropagation(); chooseDuration(day, dow, opt.time, EXTENDED_MINUTES) }
+            box.appendChild(btn15)
+          }
+          const btnCancel = document.createElement('button')
+          btnCancel.className = 'btn-duration-cancel'
+          btnCancel.textContent = 'Cancelar'
+          btnCancel.onclick = (e) => { e.stopPropagation(); pendingKey = null; renderCalendar() }
+          box.appendChild(btnCancel)
+          col.appendChild(box)
+        } else {
+          const div = document.createElement('div')
+          div.className = 'slot'
+          div.textContent = opt.time
+          div.onclick = () => handleSlotClick(day, dow, opt.time, opt.maxMinutes)
+          col.appendChild(div)
+        }
+      })
+    })
+    if (!anyOption) col.innerHTML += '<div class="slot-empty">—</div>'
+    cal.appendChild(col)
+  })
+}
+
+function handleSlotClick(day, dow, time, maxMinutes) {
+  if (maxMinutes >= EXTENDED_MINUTES) {
+    pendingKey = dateStr(day) + '_' + time
+    renderCalendar()
+  } else {
+    chooseDuration(day, dow, time, STANDARD_MINUTES)
+  }
+}
+
+function chooseDuration(day, dow, time, duration) {
+  const keys = []
+  const blocks = duration / BLOCK_MINUTES
+  for (let i = 0; i < blocks; i++) keys.push(minToTime(timeToMin(time) + i * BLOCK_MINUTES))
+  selection = { date: dateStr(day), dow, start: time, duration, keys }
+  pendingKey = null
+  renderCalendar()
+  updatePanel()
+}
+
+function clearSelection() {
+  selection = null
+  renderCalendar()
+  updatePanel()
+}
+
+function durationLabel(mins) { return mins === 60 ? '1 hora' : '1,5 horas' }
+
+function updatePanel() {
+  const panel = document.getElementById('pricing-panel')
+  if (!selection) { panel.classList.remove('visible'); return }
+  panel.classList.add('visible')
+  const endTime = minToTime(timeToMin(selection.start) + selection.duration)
+  document.getElementById('p-count').textContent = `${selection.start} – ${endTime}`
+  document.getElementById('p-combo').textContent = `Duración: ${durationLabel(selection.duration)}`
+}
+
+function formatSlotLabel(key) {
+  const [date, time] = key.split('_')
+  const d = new Date(date + 'T12:00:00')
+  return `${DAY_NAMES[d.getDay()]} ${d.getDate()} de ${MONTHS[d.getMonth()]}`
+}
+
+function goToForm() {
+  if (!selection) return
+  renderFormSummary()
+  show('screen-form')
+}
+
+function goBack() { show('screen-calendar') }
+
+function renderFormSummary() {
+  const n = selection.keys.length
+  const endTime = minToTime(timeToMin(selection.start) + selection.duration)
+  const dayLabel = formatSlotLabel(selection.date + '_' + selection.start)
+  const totalHtml = ratePerBlock != null
+    ? `<div class="summary-total"><span>Total</span><span>${formatARS(ratePerBlock * n)}</span></div>`
+    : `<div class="summary-total pending">Ingresá tu WhatsApp para ver el total</div>`
+  document.getElementById('form-summary').innerHTML = `
+    <div class="summary-title">Resumen de tu reserva</div>
+    <div class="summary-slots">${dayLabel} · ${selection.start} a ${endTime} hs</div>
+    <div class="summary-price-detail">${durationLabel(selection.duration)}</div>
+    ${totalHtml}
+  `
+}
+
+// Busca la tarifa por bloque de 30 min asociada al teléfono, en la tabla "tarifas"
+async function onPhoneChange() {
+  const raw = document.getElementById('f-phone').value
+  const phone = normalizePhone(raw)
+  const hint = document.getElementById('phone-hint')
+  if (phone.length < 8) { ratePerBlock = null; renderFormSummary(); return }
+  const myToken = ++rateLookupToken
+  hint.textContent = 'Buscando tu tarifa...'
+  const { data, error } = await sb.from('tarifas').select('price_per_block').eq('phone', phone).maybeSingle()
+  if (myToken !== rateLookupToken) return
+  if (error || !data) {
+    ratePerBlock = null
+    hint.textContent = 'No encontramos una tarifa cargada para este número — Norma te confirmará el valor por WhatsApp.'
+  } else {
+    ratePerBlock = Number(data.price_per_block)
+    hint.textContent = `Tarifa: ${formatARS(ratePerBlock)} cada 30 minutos.`
+  }
+  renderFormSummary()
+}
+
+async function submitReservation() {
+  const parent = document.getElementById('f-parent').value.trim()
+  const student = document.getElementById('f-student').value.trim()
+  const phoneRaw = document.getElementById('f-phone').value.trim()
+  const phone = normalizePhone(phoneRaw)
+  const email = document.getElementById('f-email').value.trim()
+  const subject = document.getElementById('f-subject').value.trim()
+  const interests = document.getElementById('f-interests').value.trim()
+  const errEl = document.getElementById('form-error')
+
+  if (!parent || !student || !phone) {
+    errEl.textContent = 'Completá nombre, alumno y WhatsApp para continuar.'
+    errEl.style.display = 'block'; return
+  }
+  errEl.style.display = 'none'
+
+  const btn = document.getElementById('btn-submit')
+  btn.disabled = true; btn.textContent = 'Guardando...'
+
+  const n = selection.keys.length
+  const keys = selection.keys.map(t => selection.date + '_' + t)
+  const total = ratePerBlock != null ? ratePerBlock * n : null
+
+  await sb.from('reservations').insert({
+    parent_name: parent, student_name: student,
+    phone, email: email || null, subject,
+    interests: interests || null,
+    slots: keys, block_minutes: BLOCK_MINUTES,
+    price_per_block: ratePerBlock,
+    total_amount: total, status: 'pending_payment'
+  })
+
+  currentICS = generateICS(student, keys)
+  const dayLabel = formatSlotLabel(keys[0])
+  const endTime = minToTime(timeToMin(selection.start) + selection.duration)
+  const waMsg = encodeURIComponent(
+    `Hola Norma! Hice una reserva de clase para ${student}.\n` +
+    `Horario: ${dayLabel}, ${selection.start} a ${endTime} hs\n` +
+    (total != null ? `Total: ${formatARS(total)}\n` : `Total: a confirmar\n`) +
+    `Te adjunto el comprobante de transferencia.`
+  )
+
+  document.getElementById('success-detail').textContent = `${dayLabel} · ${selection.start} a ${endTime} hs para ${student}`
+  document.getElementById('success-combo').textContent = `${durationLabel(selection.duration)} de clase`
+  const amountEl = document.getElementById('success-amount')
+  const pendingNote = document.getElementById('pending-price-note')
+  if (total != null) {
+    amountEl.textContent = formatARS(total)
+  } else {
+    amountEl.textContent = 'A confirmar'
+    pendingNote.innerHTML = '💡 Norma te va a confirmar el monto exacto por WhatsApp antes de que hagas la transferencia. Escribile con el resumen de tu reserva.'
+  }
+  document.getElementById('whatsapp-btn').href = `https://wa.me/${NORMA_WA}?text=${waMsg}`
+
+  fetch('https://ivarjjotugjdsgapcrpt.supabase.co/functions/v1/send-confirmation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2YXJqam90dWdqZHNnYXBjcnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMDIyODUsImV4cCI6MjA5OTc3ODI4NX0.uK1wOrzJnYIxnTT_Jgirme5kPBa3IRE1frGze2vhuQA' },
+    body: JSON.stringify({ parent_name: parent, student_name: student, email: email || null, phone, slots: keys, total_amount: total })
+  }).catch(() => {})
+
+  show('screen-success')
+}
+
+function generateICS(studentName, slots) {
+  const sorted = [...slots].sort()
+  const first = sorted[0], last = sorted[sorted.length - 1]
+  const [d, hStart] = first.split('_')
+  const [, hLast] = last.split('_')
+  const ds = d.replace(/-/g,'')
+  const [h1, m1] = hStart.split(':')
+  const endMin = timeToMin(hLast) + BLOCK_MINUTES
+  const eh = String(Math.floor(endMin/60)).padStart(2,'0'), em = String(endMin%60).padStart(2,'0')
+  const event = ['BEGIN:VEVENT',`DTSTART:${ds}T${h1.padStart(2,'0')}${m1.padStart(2,'0')}00`,`DTEND:${ds}T${eh}${em}00`,`SUMMARY:Clase Apprendo — ${studentName}`,'DESCRIPTION:Clase con Norma Costaganna (Apprendo)','BEGIN:VALARM','TRIGGER:-PT24H','ACTION:DISPLAY','DESCRIPTION:Recordatorio: clase mañana con Norma','END:VALARM','END:VEVENT'].join('\r\n')
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Apprendo//ES','CALSCALE:GREGORIAN', event,'END:VCALENDAR'].join('\r\n')
+}
+
+function downloadICS() {
+  if (!currentICS) return
+  const blob = new Blob([currentICS], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a'); a.href = url; a.download = 'clase-apprendo.ics'; a.click()
+  URL.revokeObjectURL(url)
+}
+
+function copyText(text, el) {
+  navigator.clipboard.writeText(text)
+  const orig = el.innerHTML
+  el.innerHTML = el.innerHTML.replace('📋','✅')
+  setTimeout(() => el.innerHTML = orig, 2000)
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  window.scrollTo(0, 0)
+}
+
+function prevWeek() { weekOffset--; pendingKey = null; renderCalendar() }
+function nextWeek() { weekOffset++; pendingKey = null; renderCalendar() }
+
+renderCalendar()
+</script>
+</body>
+</html>

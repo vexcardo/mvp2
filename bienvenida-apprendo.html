@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apprendo — Bienvenida</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #FAFAF8;
+    color: #1A1A1A;
+  }
+
+  .header {
+    background: #0A8F7E;
+    padding: 16px 20px;
+  }
+
+  .header-logo {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+  }
+
+  .header-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 1px;
+  }
+
+  .container {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 48px 16px 64px;
+  }
+
+  .letter-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #E5E5E3;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    padding: 32px 28px;
+  }
+
+  .letter-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1A1A1A;
+  }
+
+  .letter-card p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #444;
+    margin-bottom: 16px;
+  }
+
+  .signature {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #F0F0EE;
+  }
+
+  .signature-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #0A8F7E;
+  }
+
+  .signature-role {
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  .cta-row {
+    margin-top: 28px;
+  }
+
+  .btn-cta {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #0A8F7E;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s;
+  }
+
+  .btn-cta:hover {
+    background: #076D60;
+  }
+
+  .cta-hint {
+    text-align: center;
+    font-size: 13px;
+    color: #AAA;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 32px 12px 48px; }
+    .letter-card { padding: 26px 20px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-logo">📚 Apprendo</div>
+    <div class="header-sub">Norma Costaganna · Clases particulares</div>
+  </div>
+
+  <div class="container">
+    <div class="letter-card">
+      <div class="letter-title">Bienvenidos a Apprendo</div>
+
+      <p>Junto a mi hija estamos dando los primeros pasos de un proyecto que nació de un deseo muy simple: hacer que organizar las clases de apoyo sea más fácil para vos, para tu hijo/a y para mí.</p>
+
+      <p>Creamos esta plataforma para simplificar la reserva de clases y hacer más fácil la organización de los horarios.</p>
+
+      <p>Apprendo todavía está creciendo, y tu experiencia y tus sugerencias son muy importantes para nosotros. Cada comentario nos ayuda a mejorar.</p>
+
+      <p>Gracias por acompañarnos en este comienzo.</p>
+
+      <div class="signature">
+        <div class="signature-name">Norma</div>
+        <div class="signature-role">Fundadora de Apprendo</div>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn-cta" href="https://apprendo-v2.vercel.app/reservar.html">Reservar un horario</a>
+        <div class="cta-hint">Te lleva directo a la pantalla de reservas</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
