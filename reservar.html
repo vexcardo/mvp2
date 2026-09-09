@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio Bioquímico — Reservar turno</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; }
+.header { background: #FCF9F1; border-bottom: 1px solid #E9DECD; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.header-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: #5B4A6D; line-height: 1.2; }
+.header-sub { font-size: 11px; letter-spacing: .03em; color: #7C6E83; margin-top: 2px; }
+.section-title, .letter-title { font-family: 'Playfair Display', serif; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px 16px 140px; }
+.steps { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #E9DECD; }
+.step { flex: 1; text-align: center; font-size: 13px; color: #A79AA8; padding-bottom: 12px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.step.active { color: #5B4A6D; border-color: #5B4A6D; font-weight: 500; }
+.step.done { color: #5B4A6D; border-color: #5B4A6D; }
+.section-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.section-sub { font-size: 14px; color: #7C6E83; margin-bottom: 20px; }
+
+.pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.pack-card { background: white; border: 2px solid #E9DECD; border-radius: 14px; padding: 18px; cursor: pointer; transition: all .15s; }
+.pack-card:hover { border-color: #C6A54D; }
+.pack-card.selected { border-color: #5B4A6D; background: #FBF7ED; box-shadow: 0 2px 10px rgba(91,74,109,0.12); }
+.pack-sessions { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: #5B4A6D; }
+.pack-price { font-size: 22px; font-weight: 700; margin-top: 4px; }
+.pack-note { font-size: 12px; color: #C6A54D; font-weight: 600; margin-top: 4px; }
+.pack-hint { font-size: 12px; color: #7C6E83; margin-top: 6px; }
+
+.duration-hint { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.duration-badge { background: white; border: 1.5px solid #E9DECD; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #4A3F52; }
+.duration-badge strong { color: #5B4A6D; }
+.spacing-note { background: #F1DDD3; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #5B4A6D; margin-bottom: 20px; line-height: 1.6; }
+
+.week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.week-label { font-size: 15px; font-weight: 500; }
+.btn-week { background: white; border: 1px solid #DDD; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.calendar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.day-header { text-align: center; font-size: 12px; font-weight: 500; color: #7C6E83; margin-bottom: 6px; }
+.day-header.today-h { color: #5B4A6D; }
+.day-date { font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 8px; }
+.day-date.today-d { background: #5B4A6D; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+.slot { border: 1.5px solid #E9DECD; border-radius: 8px; padding: 9px 4px; text-align: center; font-size: 12.5px; cursor: pointer; margin-bottom: 6px; background: white; transition: all .15s; font-weight: 500; }
+.slot:hover { border-color: #5B4A6D; background: #F1DDD3; }
+.slot.selected { background: #5B4A6D; color: white; border-color: #5B4A6D; }
+.slot-empty { text-align: center; color: #DDD; font-size: 12px; margin-top: 8px; }
+
+.pricing-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #E9DECD; padding: 14px 20px; box-shadow: 0 -4px 16px rgba(91,74,109,0.08); display: none; z-index: 100; }
+.pricing-panel.visible { display: block; }
+.pricing-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 16px; }
+.pricing-info { flex: 1; }
+.pricing-count { font-size: 14px; font-weight: 500; }
+.pricing-combo { font-size: 13px; color: #5B4A6D; font-weight: 500; margin-top: 1px; }
+.btn-continuar { background: #5B4A6D; color: white; border: none; border-radius: 12px; padding: 14px 28px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; white-space: nowrap; }
+.btn-continuar:hover { background: #453856; }
+.btn-continuar:disabled { opacity: .5; cursor: not-allowed; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+.form-card { background: white; border-radius: 16px; border: 1px solid #E9DECD; padding: 24px; max-width: 500px; }
+label { display: block; font-size: 14px; font-weight: 500; color: #4A3F52; margin-bottom: 6px; margin-top: 16px; }
+label:first-child { margin-top: 0; }
+label .opt { font-weight: 400; color: #A79AA8; font-size: 12px; }
+input, textarea { width: 100%; border: 1px solid #DDD; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit; outline: none; transition: border-color .15s; }
+input:focus, textarea:focus { border-color: #5B4A6D; box-shadow: 0 0 0 3px rgba(91,74,109,0.1); }
+textarea { resize: vertical; min-height: 80px; }
+.field-hint { font-size: 12px; color: #A79AA8; margin-top: 5px; }
+.interests-box { background: #F5F0E8; border-radius: 12px; padding: 16px; margin-top: 20px; border: 1px solid #E9DECD; }
+.interests-title { font-size: 13px; font-weight: 600; color: #4A3F52; margin-bottom: 4px; }
+.interests-sub { font-size: 12px; color: #7C6E83; margin-bottom: 10px; }
+.summary-box { background: #F1DDD3; border: 1px solid #5B4A6D; border-radius: 12px; padding: 16px; margin-top: 20px; }
+.summary-title { font-size: 12px; font-weight: 600; color: #5B4A6D; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.summary-slots { font-size: 13px; color: #4A3F52; line-height: 1.8; margin-bottom: 10px; }
+.summary-line { display: flex; justify-content: space-between; font-size: 14px; color: #4A3F52; padding: 4px 0; }
+.summary-total { display: flex; justify-content: space-between; font-size: 19px; font-weight: 700; color: #3A2E42; border-top: 1px solid rgba(91,74,109,0.2); padding-top: 10px; margin-top: 6px; }
+.summary-price-detail { font-size: 13px; color: #7C6E83; margin-bottom: 6px; }
+.btn-back { background: white; border: 1px solid #DDD; border-radius: 10px; padding: 10px 18px; font-size: 14px; cursor: pointer; font-family: inherit; margin-bottom: 20px; }
+.btn-pagar { width: 100%; background: #5B4A6D; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 17px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 16px; }
+.btn-pagar:hover { background: #453856; }
+.btn-pagar:disabled { opacity: .6; cursor: not-allowed; }
+.error-msg { color: #C0392B; font-size: 14px; margin-top: 10px; display: none; }
+.policy { background: #F5F0E8; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #4A3F52; line-height: 1.8; margin-top: 16px; }
+.link-misclases { text-align: center; font-size: 13px; color: #A79AA8; margin-top: 12px; }
+.link-misclases a { color: #5B4A6D; font-weight: 500; text-decoration: none; }
+@media (max-width: 580px) {
+.calendar { grid-template-columns: repeat(3, 1fr); }
+.pack-grid { grid-template-columns: 1fr; }
+.pricing-inner { flex-direction: column; gap: 8px; }
+.btn-continuar { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+<svg width="30" height="30" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+<circle cx="17" cy="17" r="15.5" stroke="#5B4A6D" stroke-width="1.3"/>
+<path d="M17 8C13 13 11 16.2 11 19.5C11 22.5 13.7 25 17 25C20.3 25 23 22.5 23 19.5C23 16.2 21 13 17 8Z" stroke="#5B4A6D" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M14 14.5C15.4 15.6 15.4 16.9 14 18C15.4 19.1 15.4 20.4 14 21.5" stroke="#C6A54D" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M20 14.5C18.6 15.6 18.6 16.9 20 18C18.6 19.1 18.6 20.4 20 21.5" stroke="#5B4A6D" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
+<div>
+<div class="header-logo">Laboratorio Bioquímico</div>
+<div class="header-sub">DE REGENERACIÓN CELULAR</div>
+</div>
+</div>
+
+<!-- SCREEN 1: PACK + CALENDARIO -->
+<div class="screen active" id="screen-calendar">
+<div class="container">
+<div class="steps">
+<div class="step active">1. Elegí tu pack y horario</div>
+<div class="step">2. Tus datos</div>
+<div class="step">3. Confirmar</div>
+</div>
+
+<div class="section-title">Elegí tu pack</div>
+<div class="section-sub">Podés reservar una sesión suelta o el pack de 3 con mejor precio.</div>
+<div class="pack-grid" id="pack-grid"></div>
+
+<div id="calendar-section" style="display:none;">
+<div class="section-title">Elegí el/los horario/s</div>
+<div class="section-sub" id="calendar-sub"></div>
+<div class="duration-hint">
+<div class="duration-badge">Cada sesión dura <strong>1 hora</strong></div>
+</div>
+<div class="spacing-note" id="spacing-note" style="display:none;">
+💡 Para el tratamiento de PRP Capilar se recomienda dejar entre <strong>20 y 25 días</strong> entre cada sesión. Es solo una sugerencia — podés elegir las fechas que mejor te queden.
+</div>
+<div class="week-nav">
+<button class="btn-week" onclick="prevWeek()">‹</button>
+<span class="week-label" id="week-label"></span>
+<button class="btn-week" onclick="nextWeek()">›</button>
+</div>
+<div class="calendar" id="calendar"></div>
+<div class="policy">
+<strong>Política de cancelación:</strong> más de 24 hs antes → sin cargo · entre 6 y 24 hs → 50% de la seña · menos de 6 hs → sin reembolso
+</div>
+<div class="link-misclases">
+¿Ya tenés turnos reservados? → <a href="mis-turnos.html">Ver mis turnos</a>
+</div>
+</div>
+</div>
+
+<div class="pricing-panel" id="pricing-panel">
+<div class="pricing-inner">
+<div class="pricing-info">
+<div class="pricing-count" id="p-count"></div>
+<div class="pricing-combo" id="p-combo"></div>
+</div>
+<button class="btn-continuar" id="btn-continuar" onclick="goToForm()" disabled>Continuar →</button>
+</div>
+</div>
+</div>
+
+<!-- SCREEN 2: FORMULARIO -->
+<div class="screen" id="screen-form">
+<div class="container">
+<div class="steps">
+<div class="step done">1. Pack y horario ✓</div>
+<div class="step active">2. Tus datos</div>
+<div class="step">3. Confirmar</div>
+</div>
+<button class="btn-back" onclick="goBack()">← Volver al calendario</button>
+<div class="section-title">Tus datos</div>
+<div class="section-sub">Para confirmar la reserva necesitamos tus datos de contacto.</div>
+<div class="form-card">
+<label>Tu nombre completo</label>
+<input type="text" id="f-parent" placeholder="Ej: María González" />
+<label>Nombre del paciente</label>
+<input type="text" id="f-student" placeholder="Ej: María González" />
+<label>WhatsApp</label>
+<input type="tel" id="f-phone" placeholder="Ej: 11 1234-5678" />
+<label>Email <span class="opt">(opcional — para recibir confirmación y recordatorios)</span></label>
+<input type="email" id="f-email" placeholder="Ej: maria@gmail.com" />
+<label>Tratamiento</label>
+<input type="text" id="f-subject" placeholder="Ej: PRP Capilar" value="PRP Capilar" />
+<div class="interests-box">
+<div class="interests-title">💡 ¿Hay algún otro tratamiento que te interese?</div>
+<div class="interests-sub">Opcional — nos ayuda a conocer mejor tus necesidades</div>
+<textarea id="f-interests" placeholder="Ej: también me interesa PRP facial..."></textarea>
+</div>
+<div class="summary-box" id="form-summary"></div>
+<div class="error-msg" id="form-error"></div>
+<button class="btn-pagar" id="btn-submit" onclick="submitReservation()">Confirmar reserva →</button>
+</div>
+</div>
+</div>
+
+<!-- SCREEN 3: PAGO / TRANSFERENCIA -->
+<div class="screen" id="screen-success">
+<div class="container" style="max-width:540px;">
+<div class="steps">
+<div class="step done">1. Pack y horario ✓</div>
+<div class="step done">2. Datos ✓</div>
+<div class="step active">3. Confirmar</div>
+</div>
+<div style="text-align:center;margin-bottom:28px;">
+<div style="font-size:52px;margin-bottom:10px;">🎉</div>
+<div style="font-size:24px;font-weight:700;color:#5B4A6D;margin-bottom:6px;">¡Turno registrado!</div>
+<div style="font-size:15px;color:#4A3F52;" id="success-detail"></div>
+</div>
+<div style="background:white;border-radius:16px;border:1.5px solid #5B4A6D;padding:22px;margin-bottom:14px;">
+<div style="font-size:12px;font-weight:600;color:#5B4A6D;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;">Datos para la transferencia</div>
+<div style="display:flex;flex-direction:column;gap:0;">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F0EAE0;">
+<span style="font-size:14px;color:#7C6E83;">Titular</span>
+<span style="font-size:14px;font-weight:500;">A completar</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F0EAE0;">
+<span style="font-size:14px;color:#7C6E83;">Alias</span>
+<span style="font-size:16px;font-weight:700;color:#5B4A6D;cursor:pointer;" onclick="copyText('ALIAS_A_COMPLETAR',this)">ALIAS_A_COMPLETAR 📋</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+<span style="font-size:14px;color:#7C6E83;">CVU</span>
+<span style="font-size:13px;font-weight:500;cursor:pointer;" onclick="copyText('CVU_A_COMPLETAR',this)">CVU_A_COMPLETAR 📋</span>
+</div>
+</div>
+</div>
+<div style="background:white;border-radius:14px;border:1px solid #E9DECD;padding:16px;margin-bottom:14px;">
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div>
+<div style="font-size:13px;color:#7C6E83;margin-bottom:2px;">Seña a transferir ahora (20%)</div>
+<div style="font-size:13px;color:#5B4A6D;" id="success-combo"></div>
+</div>
+<div style="font-size:28px;font-weight:700;" id="success-amount"></div>
+</div>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid #F0EAE0;display:flex;justify-content:space-between;font-size:13px;color:#7C6E83;">
+<span>Total del pack</span><span id="success-total"></span>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#7C6E83;">
+<span>Resta abonar (80%)</span><span id="success-remaining"></span>
+</div>
+</div>
+<div style="background:#FEF3E0;border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:14px;color:#7A4B08;line-height:1.6;">
+💡 Una vez realizada la transferencia de la seña, enviá el comprobante por WhatsApp para confirmar tu turno. El 80% restante se abona en el laboratorio.
+</div>
+<a id="whatsapp-btn" href="#" target="_blank" style="display:block;text-decoration:none;margin-bottom:10px;">
+<button style="width:100%;background:#25D366;color:white;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;">
+💬 Enviar comprobante por WhatsApp
+</button>
+</a>
+<button id="btn-ics" onclick="downloadICS()" style="width:100%;background:white;color:#5B4A6D;border:1.5px solid #5B4A6D;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+📅 Agregar turnos a mi calendario (.ics)
+</button>
+<button onclick="window.location.reload()" style="width:100%;background:white;color:#7C6E83;border:1px solid #DDD;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;font-family:inherit;">
+Hacer otra reserva
+</button>
+<div style="text-align:center;margin-top:16px;font-size:13px;color:#A79AA8;">
+¿Necesitás cancelar o ver tus turnos? → <a href="mis-turnos.html" style="color:#5B4A6D;font-weight:500;text-decoration:none;">Gestionar mis turnos</a>
+</div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://enoivcecdzdzzrezmyll.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVub2l2Y2VjZHpkenpyZXpteWxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyNzE5NzAsImV4cCI6MjEwMzg0Nzk3MH0.GzQA-5V7tK_fVjAnBzVsb4elnTsP3Oin3G6s7JcUgFo'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+const BLOCK_MINUTES = 30
+const SESSION_MINUTES = 60
+const DEPOSIT_PCT = 0.20
+const LAB_WA = '5491100000000' // ⚠️ reemplazar por el WhatsApp real del laboratorio
+
+const PACKS = [
+  { id: 'x1', sessions: 1, price: 65000, label: '1 sesión' },
+  { id: 'x3', sessions: 3, price: 190000, label: '3 sesiones', note: 'Ahorrás $5.000' }
+]
+
+const WINDOWS_BY_DAY = {
+  0: [],
+  1: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
+  2: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
+  3: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
+  4: [{ start: '16:30', end: '20:00' }],
+  5: [{ start: '17:00', end: '20:00' }],
+  6: []
+}
+
+const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+let selectedPack = null
+let selections = []   // [{ date, dow, start }]
+let bookedKeys = []
+let blockedKeys = []
+let weekOffset = 0
+let currentICS = ''
+
+function dateStr(d) { return d.toISOString().split('T')[0] }
+function isToday(d) { return dateStr(d) === dateStr(new Date()) }
+function timeToMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m }
+function minToTime(m) { const h = Math.floor(m/60), mm = m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0') }
+function isPastDT(d, time) { return new Date(dateStr(d) + 'T' + time) <= new Date() }
+function normalizePhone(p) { return (p || '').replace(/\D/g, '') }
+function formatARS(n) { return '$' + Number(n).toLocaleString('es-AR') }
+
+function renderPacks() {
+  const grid = document.getElementById('pack-grid')
+  grid.innerHTML = ''
+  PACKS.forEach(pack => {
+    const card = document.createElement('div')
+    card.className = 'pack-card' + (selectedPack && selectedPack.id === pack.id ? ' selected' : '')
+    card.innerHTML = `
+      <div class="pack-sessions">${pack.label}</div>
+      <div class="pack-price">${formatARS(pack.price)}</div>
+      ${pack.note ? `<div class="pack-note">${pack.note}</div>` : ''}
+      <div class="pack-hint">Seña para reservar: ${formatARS(Math.round(pack.price * DEPOSIT_PCT))} (20%)</div>
+    `
+    card.onclick = () => selectPack(pack)
+    grid.appendChild(card)
+  })
+}
+
+function selectPack(pack) {
+  selectedPack = pack
+  selections = []
+  renderPacks()
+  document.getElementById('calendar-section').style.display = 'block'
+  document.getElementById('calendar-sub').textContent = pack.sessions === 1
+    ? 'Elegí el horario de tu sesión.'
+    : `Elegí las ${pack.sessions} fechas de tu pack.`
+  document.getElementById('spacing-note').style.display = pack.sessions > 1 ? 'block' : 'none'
+  renderCalendar()
+  updatePanel()
+}
+
+function getWeekDates() {
+  const today = new Date(); today.setHours(0,0,0,0)
+  const dow = today.getDay()
+  const diff = dow === 0 ? -6 : 1 - dow
+  const monday = new Date(today)
+  monday.setDate(today.getDate() + diff + weekOffset * 7)
+  const days = []
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i); days.push(d)
+  }
+  return days
+}
+
+async function loadOccupied() {
+  const days = getWeekDates()
+  const from = dateStr(days[0]), to = dateStr(days[4])
+  const { data: res } = await sb.from('reservations').select('slots').neq('status','cancelled')
+  bookedKeys = []
+  ;(res||[]).forEach(r => { if(Array.isArray(r.slots)) r.slots.forEach(k => bookedKeys.push(k)) })
+  const { data: blk } = await sb.from('blocked_slots').select('date,time').gte('date',from).lte('date',to)
+  blockedKeys = (blk||[]).map(b => b.date+'_'+b.time)
+}
+
+function isFree(day, timeStr) {
+  const key = dateStr(day) + '_' + timeStr
+  if (isPastDT(day, timeStr)) return false
+  if (bookedKeys.includes(key)) return false
+  if (blockedKeys.includes(key)) return false
+  if (selections.some(s => s.date === dateStr(day) && s.start === timeStr)) return false
+  return true
+}
+
+// Horarios "en punto" con al menos 60 minutos libres seguidos dentro de la ventana
+function getStartOptions(day, win) {
+  const startMin = timeToMin(win.start)
+  const endMin = timeToMin(win.end)
+  const options = []
+  for (let m = startMin; m <= endMin - SESSION_MINUTES; m += 60) {
+    const t = minToTime(m)
+    if (!isFree(day, t)) continue
+    if (!isFree(day, minToTime(m + BLOCK_MINUTES))) continue
+    options.push(t)
+  }
+  return options
+}
+
+async function renderCalendar() {
+  await loadOccupied()
+  const days = getWeekDates()
+  document.getElementById('week-label').textContent =
+    `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} — ${days[4].getDate()} ${MONTHS[days[4].getMonth()]}`
+  const cal = document.getElementById('calendar')
+  cal.innerHTML = ''
+  days.forEach(day => {
+    const dow = day.getDay()
+    const windows = WINDOWS_BY_DAY[dow] || []
+    const isT = isToday(day)
+    const col = document.createElement('div')
+    col.innerHTML = `
+      <div class="day-header ${isT?'today-h':''}">${DAY_NAMES[dow]}</div>
+      <div class="${isT?'day-date today-d':'day-date'}">${day.getDate()}</div>
+    `
+    let any = false
+    // ya elegido este día
+    const chosenToday = selections.filter(s => s.date === dateStr(day))
+    chosenToday.forEach(s => {
+      any = true
+      const div = document.createElement('div')
+      div.className = 'slot selected'
+      const endT = minToTime(timeToMin(s.start) + SESSION_MINUTES)
+      div.textContent = `${s.start} – ${endT}`
+      div.onclick = () => removeSelection(s)
+      col.appendChild(div)
+    })
+    windows.forEach(win => {
+      getStartOptions(day, win).forEach(t => {
+        any = true
+        const div = document.createElement('div')
+        div.className = 'slot'
+        div.textContent = t
+        div.onclick = () => addSelection(day, dow, t)
+        col.appendChild(div)
+      })
+    })
+    if (!any) col.innerHTML += '<div class="slot-empty">—</div>'
+    cal.appendChild(col)
+  })
+}
+
+function addSelection(day, dow, time) {
+  if (!selectedPack) return
+  if (selections.length >= selectedPack.sessions) {
+    alert(`Este pack incluye ${selectedPack.sessions} sesión${selectedPack.sessions>1?'es':''}. Sacá una fecha elegida si querés cambiarla.`)
+    return
+  }
+  selections.push({ date: dateStr(day), dow, start: time })
+  renderCalendar()
+  updatePanel()
+}
+
+function removeSelection(s) {
+  selections = selections.filter(x => !(x.date === s.date && x.start === s.start))
+  renderCalendar()
+  updatePanel()
+}
+
+function updatePanel() {
+  const panel = document.getElementById('pricing-panel')
+  const btn = document.getElementById('btn-continuar')
+  if (!selectedPack) { panel.classList.remove('visible'); return }
+  panel.classList.add('visible')
+  const n = selections.length, total = selectedPack.sessions
+  document.getElementById('p-count').textContent = `${n}/${total} sesión${total>1?'es':''} elegida${n===1?'':'s'}`
+  document.getElementById('p-combo').textContent = `Pack: ${selectedPack.label} · ${formatARS(selectedPack.price)}`
+  btn.disabled = n < total
+}
+
+function formatDayLabel(dateAndTime) {
+  const [date, time] = dateAndTime.split('_')
+  const d = new Date(date + 'T12:00:00')
+  return `${DAY_NAMES[d.getDay()]} ${d.getDate()} de ${MONTHS[d.getMonth()]} · ${time} hs`
+}
+
+function goToForm() {
+  if (!selectedPack || selections.length < selectedPack.sessions) return
+  renderFormSummary()
+  show('screen-form')
+}
+
+function goBack() { show('screen-calendar') }
+
+function renderFormSummary() {
+  const deposit = Math.round(selectedPack.price * DEPOSIT_PCT)
+  const sorted = [...selections].sort((a,b) => (a.date+a.start).localeCompare(b.date+b.start))
+  const list = sorted.map(s => formatDayLabel(s.date + '_' + s.start)).join('<br>')
+  document.getElementById('form-summary').innerHTML = `
+    <div class="summary-title">Resumen de tu reserva</div>
+    <div class="summary-slots">${list}</div>
+    <div class="summary-price-detail">Pack: ${selectedPack.label}</div>
+    <div class="summary-line"><span>Total del pack</span><span>${formatARS(selectedPack.price)}</span></div>
+    <div class="summary-total"><span>Seña a pagar ahora (20%)</span><span>${formatARS(deposit)}</span></div>
+  `
+}
+
+async function submitReservation() {
+  const parent = document.getElementById('f-parent').value.trim()
+  const student = document.getElementById('f-student').value.trim()
+  const phoneRaw = document.getElementById('f-phone').value.trim()
+  const phone = normalizePhone(phoneRaw)
+  const email = document.getElementById('f-email').value.trim()
+  const subject = document.getElementById('f-subject').value.trim()
+  const interests = document.getElementById('f-interests').value.trim()
+  const errEl = document.getElementById('form-error')
+
+  if (!parent || !student || !phone) {
+    errEl.textContent = 'Completá nombre, paciente y WhatsApp para continuar.'
+    errEl.style.display = 'block'; return
+  }
+  errEl.style.display = 'none'
+
+  const btn = document.getElementById('btn-submit')
+  btn.disabled = true; btn.textContent = 'Guardando...'
+
+  const sorted = [...selections].sort((a,b) => (a.date+a.start).localeCompare(b.date+b.start))
+  const keys = sorted.map(s => s.date + '_' + s.start)
+  const total = selectedPack.price
+  const deposit = Math.round(total * DEPOSIT_PCT)
+
+  await sb.from('reservations').insert({
+    parent_name: parent, student_name: student,
+    phone, email: email || null, subject,
+    interests: interests || null,
+    slots: keys,
+    pack_sessions: selectedPack.sessions,
+    total_amount: total,
+    deposit_amount: deposit,
+    status: 'pending_payment'
+  })
+
+  currentICS = generateICS(student, keys)
+  const dayList = keys.map(formatDayLabel).join('\n')
+  const waMsg = encodeURIComponent(
+    `Hola! Reservé un pack de ${selectedPack.sessions} sesión${selectedPack.sessions>1?'es':''} para ${student}.\n` +
+    `Turnos:\n${dayList}\n` +
+    `Seña (20%): ${formatARS(deposit)}\n` +
+    `Te adjunto el comprobante de transferencia.`
+  )
+
+  document.getElementById('success-detail').textContent = `${selectedPack.label} para ${student}`
+  document.getElementById('success-combo').textContent = `${selectedPack.label} · ${keys.length} turno${keys.length>1?'s':''}`
+  document.getElementById('success-amount').textContent = formatARS(deposit)
+  document.getElementById('success-total').textContent = formatARS(total)
+  document.getElementById('success-remaining').textContent = formatARS(total - deposit)
+  document.getElementById('whatsapp-btn').href = `https://wa.me/${LAB_WA}?text=${waMsg}`
+
+  show('screen-success')
+}
+
+function generateICS(studentName, slots) {
+  const events = slots.map(key => {
+    const [d, t] = key.split('_')
+    const ds = d.replace(/-/g,'')
+    const [h, m] = t.split(':')
+    const endMin = timeToMin(t) + SESSION_MINUTES
+    const eh = String(Math.floor(endMin/60)).padStart(2,'0'), em = String(endMin%60).padStart(2,'0')
+    return ['BEGIN:VEVENT',`DTSTART:${ds}T${h.padStart(2,'0')}${m.padStart(2,'0')}00`,`DTEND:${ds}T${eh}${em}00`,`SUMMARY:Turno — ${studentName}`,'DESCRIPTION:Turno en Laboratorio Bioquímico de Regeneración Celular','BEGIN:VALARM','TRIGGER:-PT24H','ACTION:DISPLAY','DESCRIPTION:Recordatorio: turno mañana','END:VALARM','END:VEVENT'].join('\r\n')
+  }).join('\r\n')
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//LaboratorioBioquimico//ES','CALSCALE:GREGORIAN', events,'END:VCALENDAR'].join('\r\n')
+}
+
+function downloadICS() {
+  if (!currentICS) return
+  const blob = new Blob([currentICS], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a'); a.href = url; a.download = 'turnos-laboratorio.ics'; a.click()
+  URL.revokeObjectURL(url)
+}
+
+function copyText(text, el) {
+  navigator.clipboard.writeText(text)
+  const orig = el.innerHTML
+  el.innerHTML = el.innerHTML.replace('📋','✅')
+  setTimeout(() => el.innerHTML = orig, 2000)
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  window.scrollTo(0, 0)
+}
+
+function prevWeek() { weekOffset--; renderCalendar() }
+function nextWeek() { weekOffset++; renderCalendar() }
+
+renderPacks()
+</script>
+</body>
+</html>
