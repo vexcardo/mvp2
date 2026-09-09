@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorio Bioquímico — Panel</title>
+  <title>Laboratorio Bioquímico — Panel Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -159,7 +159,7 @@
     <path d="M20 14.5C18.6 15.6 18.6 16.9 20 18C18.6 19.1 18.6 20.4 20 21.5" stroke="#5B4A6D" stroke-width="1.2" stroke-linecap="round"/>
   </svg>
   <div class="login-title">Laboratorio Bioquímico</div>
-  <div class="login-sub">Panel de Flor y Nati</div>
+  <div class="login-sub">Panel de Administración</div>
   <div class="login-card">
     <label>Contraseña</label>
     <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" />
@@ -179,7 +179,7 @@
         <path d="M20 14.5C18.6 15.6 18.6 16.9 20 18C18.6 19.1 18.6 20.4 20 21.5" stroke="#5B4A6D" stroke-width="1.2" stroke-linecap="round"/>
       </svg>
       <div>
-        <h1>Laboratorio Bioquímico — Panel</h1>
+        <h1>Panel Admin</h1>
         <p id="today-label"></p>
       </div>
     </div>
@@ -191,30 +191,28 @@
     <!-- STATS -->
     <div class="stats">
       <div class="stat-card">
-        <div class="stat-icon">📋</div>
-        <div class="stat-val green" id="stat-pending">—</div>
-        <div class="stat-label">Turnos pendientes de pago</div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon">✅</div>
-        <div class="stat-val" id="stat-paid">—</div>
+        <div class="stat-val green" id="stat-paid">—</div>
         <div class="stat-label">Turnos confirmados</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🗓️</div>
-        <div class="stat-val" id="stat-sessions">—</div>
-        <div class="stat-label">Turnos realizados</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🧑‍⚕️</div>
-        <div class="stat-val" id="stat-students">—</div>
-        <div class="stat-label">Pacientes distintos</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">💰</div>
         <div class="stat-val" id="stat-revenue">—</div>
-        <div class="stat-label">Total cobrado (señas confirmadas)</div>
+        <div class="stat-label">Total cobrado ($)</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-val" id="stat-pending">—</div>
+        <div class="stat-label">Turnos pendientes de pago</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:24px;">
+      <a href="metricas.html" style="text-decoration:none;">
+        <button style="background:white;color:#5B4A6D;border:1.5px solid #5B4A6D;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;">
+          📊 Ver métricas del negocio
+        </button>
+      </a>
     </div>
 
     <!-- TABS -->
@@ -325,25 +323,12 @@ async function loadReservations() {
 }
 
 function updateStats() {
-  const active = allReservations.filter(r => r.status !== 'cancelled')
   const pending = allReservations.filter(r => r.status === 'pending_payment')
   const paid = allReservations.filter(r => r.status === 'paid')
-  const patients = [...new Set(allReservations.map(r => r.student_name))].length
-  const now = new Date()
-  const totalSessions = active.reduce((sum, r) => {
-    if (!Array.isArray(r.slots)) return sum
-    const pastCount = r.slots.filter(key => {
-      const [date, time] = key.split('_')
-      return new Date(`${date}T${time}:00`) <= now
-    }).length
-    return sum + pastCount
-  }, 0)
   const revenue = paid.reduce((s, r) => s + (r.deposit_amount != null ? r.deposit_amount : (r.total_amount || 0)), 0)
-  document.getElementById('stat-pending').textContent = pending.length
   document.getElementById('stat-paid').textContent = paid.length
-  document.getElementById('stat-sessions').textContent = totalSessions
-  document.getElementById('stat-students').textContent = patients
   document.getElementById('stat-revenue').textContent = revenue > 0 ? '$' + revenue.toLocaleString('es-AR') : '$0'
+  document.getElementById('stat-pending').textContent = pending.length
 }
 
 function filterReservations(q) {
