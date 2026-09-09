@@ -266,6 +266,11 @@ textarea { resize: vertical; min-height: 80px; }
 	•	Evitar piletas, saunas por 24 hs.
 	•	Puede aparecer enrojecimiento o leve inflamación, que cede espontáneamente.</div>
 </div>
+<a href="productos.html" style="display:block;text-decoration:none;margin-bottom:10px;">
+<button style="width:100%;background:#F1DDD3;color:#5B4A6D;border:1.5px solid #5B4A6D;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+✨ Elegí tu producto personalizado
+</button>
+</a>
 <button id="btn-ics" onclick="downloadICS()" style="width:100%;background:white;color:#5B4A6D;border:1.5px solid #5B4A6D;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;">
 📅 Agregar turnos a mi calendario (.ics)
 </button>
@@ -286,7 +291,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 const BLOCK_MINUTES = 30
 const SESSION_MINUTES = 60
 const DEPOSIT_PCT = 0.20
-const LAB_WA = '5491128751300' // ⚠️ reemplazar por el WhatsApp real del laboratorio
+const LAB_WA = '5491128751300'
 
 const PACKS = [
   { id: 'x1', sessions: 1, price: 65000, label: '1 sesión' },
@@ -307,7 +312,7 @@ const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
 let selectedPack = null
-let selections = []   // [{ date, dow, start }]
+let selections = []
 let bookedKeys = []
 let blockedKeys = []
 let weekOffset = 0
@@ -383,7 +388,6 @@ function isFree(day, timeStr) {
   return true
 }
 
-// Horarios "en punto" con al menos 60 minutos libres seguidos dentro de la ventana
 function getStartOptions(day, win) {
   const startMin = timeToMin(win.start)
   const endMin = timeToMin(win.end)
@@ -414,7 +418,6 @@ async function renderCalendar() {
       <div class="${isT?'day-date today-d':'day-date'}">${day.getDate()}</div>
     `
     let any = false
-    // ya elegido este día
     const chosenToday = selections.filter(s => s.date === dateStr(day))
     chosenToday.forEach(s => {
       any = true
