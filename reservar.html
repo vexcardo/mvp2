@@ -116,23 +116,27 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="screen active" id="screen-calendar">
 <div class="container">
 <div class="steps">
-<div class="step active">1. Elegí tu pack y horario</div>
+<div class="step active">1. Elegí tu turno</div>
 <div class="step">2. Tus datos</div>
 <div class="step">3. Confirmar</div>
 </div>
 
+<div class="section-sub" id="service-label" style="font-size:15px;font-weight:600;color:#5B4A6D;margin-bottom:16px;"></div>
+
+<div id="pack-section">
 <div class="section-title">Elegí tu pack</div>
 <div class="section-sub">Podés reservar una sesión suelta o el pack de 3 con mejor precio.</div>
 <div class="pack-grid" id="pack-grid"></div>
+</div>
 
 <div id="calendar-section" style="display:none;">
 <div class="section-title">Elegí el/los horario/s</div>
 <div class="section-sub" id="calendar-sub"></div>
 <div class="duration-hint">
-<div class="duration-badge">Cada sesión dura <strong>1 hora</strong></div>
+<div class="duration-badge">Cada sesión dura <strong id="duration-label"></strong></div>
 </div>
 <div class="spacing-note" id="spacing-note" style="display:none;">
-💡 Para el tratamiento de PRP Capilar se recomienda dejar entre <strong>20 y 25 días</strong> entre cada sesión. Es solo una sugerencia — podés elegir las fechas que mejor te queden.
+💡 Para este tratamiento se recomienda dejar entre <strong>20 y 25 días</strong> entre cada sesión. Es solo una sugerencia — podés elegir las fechas que mejor te queden.
 </div>
 <div class="week-nav">
 <button class="btn-week" onclick="prevWeek()">‹</button>
@@ -144,7 +148,7 @@ textarea { resize: vertical; min-height: 80px; }
 <strong>Política de cancelación:</strong> más de 24 hs antes → sin cargo · entre 6 y 24 hs → 50% de la seña · menos de 6 hs → sin reembolso
 </div>
 <div class="link-misclases">
-¿Ya tenés turnos reservados? → <a href="mis-turnos.html">Ver mis turnos</a>
+¿Ya tenés turnos reservados? → <a href="mis-turnos.html">Ver mis turnos</a> · <a href="servicios.html">Elegir otro servicio</a>
 </div>
 </div>
 </div>
@@ -289,24 +293,60 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const BLOCK_MINUTES = 30
-const SESSION_MINUTES = 60
 const DEPOSIT_PCT = 0.20
 const LAB_WA = '5491128751300'
 
-const PACKS = [
-  { id: 'x1', sessions: 1, price: 65000, label: '1 sesión' },
-  { id: 'x3', sessions: 3, price: 190000, label: '3 sesiones', note: 'Ahorrás $5.000' }
-]
-
-const WINDOWS_BY_DAY = {
-  0: [],
-  1: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
-  2: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
-  3: [{ start: '10:00', end: '12:00' }, { start: '18:00', end: '20:00' }],
-  4: [{ start: '16:30', end: '20:00' }],
-  5: [{ start: '17:00', end: '20:00' }],
-  6: []
+// Configuración de cada servicio: días de atención, horario, duración y venta (pack o sesión suelta)
+function windowsFromDays(days, win) {
+  const w = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }
+  days.forEach(d => { w[d] = [win] })
+  return w
 }
+
+const SERVICES = {
+  vulvovaginal: {
+    name: 'PRP — Crema regenerativa vulvovaginal',
+    duration: 30,
+    hasPack: false,
+    price: 60000,
+    windows: windowsFromDays([1,2,4,5], { start: '17:00', end: '20:00' })
+  },
+  colirios: {
+    name: 'Colirios de PRP',
+    duration: 30,
+    hasPack: false,
+    price: 60000,
+    windows: windowsFromDays([1,2,4,5], { start: '17:00', end: '20:00' })
+  },
+  traumatologia: {
+    name: 'PRP Traumatología',
+    duration: 30,
+    hasPack: false,
+    price: 60000,
+    windows: windowsFromDays([1,2,4,5], { start: '17:00', end: '20:00' })
+  },
+  capilar: {
+    name: 'PRP Facial/Capilar o i-PRF',
+    duration: 60,
+    hasPack: true,
+    packs: [
+      { id: 'x1', sessions: 1, price: 65000, label: '1 sesión' },
+      { id: 'x3', sessions: 3, price: 190000, label: '3 sesiones', note: 'Ahorrás $5.000' }
+    ],
+    windows: windowsFromDays([3], { start: '16:00', end: '20:00' })
+  }
+}
+
+const params = new URLSearchParams(window.location.search)
+const serviceKey = params.get('servicio')
+const currentService = SERVICES[serviceKey]
+if (!currentService) {
+  window.location.href = 'servicios.html'
+  throw new Error('Servicio no especificado — redirigiendo a servicios.html')
+}
+
+const SESSION_MINUTES = currentService.duration
+const WINDOWS_BY_DAY = currentService.windows
 
 const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -326,10 +366,25 @@ function isPastDT(d, time) { return new Date(dateStr(d) + 'T' + time) <= new Dat
 function normalizePhone(p) { return (p || '').replace(/\D/g, '') }
 function formatARS(n) { return '$' + Number(n).toLocaleString('es-AR') }
 
+function initService() {
+  document.getElementById('service-label').textContent = currentService.name
+  document.getElementById('duration-label').textContent = SESSION_MINUTES === 60 ? '1 hora' : '30 minutos'
+  document.getElementById('f-subject').value = currentService.name
+
+  if (currentService.hasPack) {
+    document.getElementById('pack-section').style.display = 'block'
+    renderPacks()
+  } else {
+    // Sesión suelta: no hay pantalla de packs, se arma un "pack" implícito de 1 sesión
+    document.getElementById('pack-section').style.display = 'none'
+    selectPack({ id: 'unico', sessions: 1, price: currentService.price, label: currentService.name })
+  }
+}
+
 function renderPacks() {
   const grid = document.getElementById('pack-grid')
   grid.innerHTML = ''
-  PACKS.forEach(pack => {
+  currentService.packs.forEach(pack => {
     const card = document.createElement('div')
     card.className = 'pack-card' + (selectedPack && selectedPack.id === pack.id ? ' selected' : '')
     card.innerHTML = `
@@ -346,7 +401,7 @@ function renderPacks() {
 function selectPack(pack) {
   selectedPack = pack
   selections = []
-  renderPacks()
+  if (currentService.hasPack) renderPacks()
   document.getElementById('calendar-section').style.display = 'block'
   document.getElementById('calendar-sub').textContent = pack.sessions === 1
     ? 'Elegí el horario de tu sesión.'
@@ -467,7 +522,7 @@ function updatePanel() {
   panel.classList.add('visible')
   const n = selections.length, total = selectedPack.sessions
   document.getElementById('p-count').textContent = `${n}/${total} sesión${total>1?'es':''} elegida${n===1?'':'s'}`
-  document.getElementById('p-combo').textContent = `Pack: ${selectedPack.label} · ${formatARS(selectedPack.price)}`
+  document.getElementById('p-combo').textContent = currentService.hasPack ? `Pack: ${selectedPack.label} · ${formatARS(selectedPack.price)}` : `${formatARS(selectedPack.price)}`
   btn.disabled = n < total
 }
 
@@ -492,7 +547,7 @@ function renderFormSummary() {
   document.getElementById('form-summary').innerHTML = `
     <div class="summary-title">Resumen de tu reserva</div>
     <div class="summary-slots">${list}</div>
-    <div class="summary-price-detail">Pack: ${selectedPack.label}</div>
+    <div class="summary-price-detail">${currentService.hasPack ? 'Pack: ' + selectedPack.label : currentService.name}</div>
     <div class="summary-line"><span>Total del pack</span><span>${formatARS(selectedPack.price)}</span></div>
     <div class="summary-total"><span>Seña a pagar ahora (20%)</span><span>${formatARS(deposit)}</span></div>
   `
@@ -536,14 +591,14 @@ async function submitReservation() {
   currentICS = generateICS(student, keys)
   const dayList = keys.map(formatDayLabel).join('\n')
   const waMsg = encodeURIComponent(
-    `Hola! Reservé un pack de ${selectedPack.sessions} sesión${selectedPack.sessions>1?'es':''} para ${student}.\n` +
+    `Hola! Reservé ${currentService.hasPack ? `un pack de ${selectedPack.sessions} sesión${selectedPack.sessions>1?'es':''}` : 'un turno'} de ${currentService.name} para ${student}.\n` +
     `Turnos:\n${dayList}\n` +
     `Seña (20%): ${formatARS(deposit)}\n` +
     `Te adjunto el comprobante de transferencia.`
   )
 
-  document.getElementById('success-detail').textContent = `${selectedPack.label} para ${student}`
-  document.getElementById('success-combo').textContent = `${selectedPack.label} · ${keys.length} turno${keys.length>1?'s':''}`
+  document.getElementById('success-detail').textContent = `${currentService.name} para ${student}`
+  document.getElementById('success-combo').textContent = currentService.hasPack ? `${selectedPack.label} · ${keys.length} turno${keys.length>1?'s':''}` : currentService.name
   document.getElementById('success-amount').textContent = formatARS(deposit)
   document.getElementById('success-total').textContent = formatARS(total)
   document.getElementById('success-remaining').textContent = formatARS(total - deposit)
@@ -588,7 +643,7 @@ function show(id) {
 function prevWeek() { weekOffset--; renderCalendar() }
 function nextWeek() { weekOffset++; renderCalendar() }
 
-renderPacks()
+initService()
 </script>
 </body>
 </html>
