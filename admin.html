@@ -414,7 +414,7 @@ async function loadBlocked() {
 function getWeekDates(offset) {
   const today = new Date(); today.setHours(0,0,0,0)
   const dow = today.getDay()
-  const diff = dow === 0 ? -6 : 1 - dow
+  const diff = dow === 0 ? 1 : 1 - dow
   const monday = new Date(today)
   monday.setDate(today.getDate() + diff + offset * 7)
   const days = []
