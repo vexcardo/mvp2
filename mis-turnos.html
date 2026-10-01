@@ -219,12 +219,20 @@ function closeModal() {
 
 async function confirmarCancelacion() {
   if (!pendingCancelId) return
+  const id = pendingCancelId      // guardamos el id antes de cerrar el modal
   closeModal()
-  await sb.from('reservations').update({ status: 'cancelled' }).eq('id', pendingCancelId)
+
+  const { error } = await sb.from('reservations')
+    .update({ status: 'cancelled' })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error cancelando turno:', error)
+    alert('No pudimos cancelar el turno. Probá de nuevo o escribinos por WhatsApp.')
+    return
+  }
+
   document.getElementById('success-msg').style.display = 'block'
   setTimeout(() => document.getElementById('success-msg').style.display = 'none', 4000)
   buscar()
 }
-</script>
-</body>
-</html>
