@@ -553,7 +553,7 @@ function renderFormSummary() {
 
 async function submitReservation() {
   const parent = document.getElementById('f-parent').value.trim()
-  const student = document.getElementById('f-student').value.trim()
+  const student = parent // quien reserva es la paciente
   const phoneRaw = document.getElementById('f-phone').value.trim()
   const phone = normalizePhone(phoneRaw)
   const email = document.getElementById('f-email').value.trim()
@@ -561,8 +561,12 @@ async function submitReservation() {
   const interests = document.getElementById('f-interests').value.trim()
   const errEl = document.getElementById('form-error')
 
-  if (!parent || !student || !phone) {
-    errEl.textContent = 'Completá nombre, paciente y WhatsApp para continuar.'
+  if (!parent) {
+    errEl.textContent = 'Completá tu nombre para continuar.'
+    errEl.style.display = 'block'; return
+  }
+  if (phone.length < 10) {
+    errEl.textContent = 'Ingresá tu WhatsApp con característica (ej: 11 1234-5678).'
     errEl.style.display = 'block'; return
   }
   errEl.style.display = 'none'
@@ -575,7 +579,7 @@ async function submitReservation() {
   const total = selectedPack.price
   const deposit = Math.round(total * DEPOSIT_PCT)
 
-  await sb.from('reservations').insert({
+  const { error } = await sb.from('reservations').insert({
     parent_name: parent, student_name: student,
     phone, email: email || null, subject,
     interests: interests || null,
@@ -585,6 +589,16 @@ async function submitReservation() {
     deposit_amount: deposit,
     status: 'pending_payment'
   })
+
+  if (error) {
+    console.error('Error guardando reserva:', error)
+    errEl.textContent = 'No pudimos guardar tu reserva. Probá de nuevo o escribinos por WhatsApp.'
+    errEl.style.display = 'block'
+    btn.disabled = false; btn.textContent = 'Confirmar reserva →'
+    return
+  }
+
+  currentICS = generateICS(student, keys)
 
   currentICS = generateICS(student, keys)
   const dayList = keys.map(formatDayLabel).join('\n')
