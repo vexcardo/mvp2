@@ -14,7 +14,7 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
 .header { background: #FCF9F1; border-bottom: 1px solid #E9DECD; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
 .header-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: #5B4A6D; line-height: 1.2; }
 .header-sub { font-size: 11px; letter-spacing: .03em; color: #7C6E83; margin-top: 2px; }
-.section-title, .letter-title { font-family: 'Playfair Display', serif; }
+.section-title { font-family: 'Playfair Display', serif; }
 .container { max-width: 900px; margin: 0 auto; padding: 24px 16px 140px; }
 .steps { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #E9DECD; }
 .step { flex: 1; text-align: center; font-size: 13px; color: #A79AA8; padding-bottom: 12px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
@@ -23,19 +23,9 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
 .section-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
 .section-sub { font-size: 14px; color: #7C6E83; margin-bottom: 20px; }
 
-.pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-.pack-card { background: white; border: 2px solid #E9DECD; border-radius: 14px; padding: 18px; cursor: pointer; transition: all .15s; }
-.pack-card:hover { border-color: #C6A54D; }
-.pack-card.selected { border-color: #5B4A6D; background: #FBF7ED; box-shadow: 0 2px 10px rgba(91,74,109,0.12); }
-.pack-sessions { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: #5B4A6D; }
-.pack-price { font-size: 22px; font-weight: 700; margin-top: 4px; }
-.pack-note { font-size: 12px; color: #C6A54D; font-weight: 600; margin-top: 4px; }
-.pack-hint { font-size: 12px; color: #7C6E83; margin-top: 6px; }
-
 .duration-hint { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 .duration-badge { background: white; border: 1.5px solid #E9DECD; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #4A3F52; }
 .duration-badge strong { color: #5B4A6D; }
-.spacing-note { background: #F1DDD3; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #5B4A6D; margin-bottom: 20px; line-height: 1.6; }
 
 .week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .week-label { font-size: 15px; font-weight: 500; }
@@ -69,7 +59,6 @@ label .opt { font-weight: 400; color: #A79AA8; font-size: 12px; }
 input, textarea { width: 100%; border: 1px solid #DDD; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit; outline: none; transition: border-color .15s; }
 input:focus, textarea:focus { border-color: #5B4A6D; box-shadow: 0 0 0 3px rgba(91,74,109,0.1); }
 textarea { resize: vertical; min-height: 80px; }
-.field-hint { font-size: 12px; color: #A79AA8; margin-top: 5px; }
 .interests-box { background: #F5F0E8; border-radius: 12px; padding: 16px; margin-top: 20px; border: 1px solid #E9DECD; }
 .interests-title { font-size: 13px; font-weight: 600; color: #4A3F52; margin-bottom: 4px; }
 .interests-sub { font-size: 12px; color: #7C6E83; margin-bottom: 10px; }
@@ -92,7 +81,6 @@ textarea { resize: vertical; min-height: 80px; }
 .pretreatment-body { font-size: 13.5px; color: #4A3F52; line-height: 1.7; white-space: pre-line; }
 @media (max-width: 580px) {
 .calendar { grid-template-columns: repeat(3, 1fr); }
-.pack-grid { grid-template-columns: 1fr; }
 .pricing-inner { flex-direction: column; gap: 8px; }
 .btn-continuar { width: 100%; text-align: center; }
 }
@@ -112,7 +100,7 @@ textarea { resize: vertical; min-height: 80px; }
 </div>
 </div>
 
-<!-- SCREEN 1: PACK + CALENDARIO -->
+<!-- SCREEN 1: CALENDARIO -->
 <div class="screen active" id="screen-calendar">
 <div class="container">
 <div class="steps">
@@ -123,20 +111,11 @@ textarea { resize: vertical; min-height: 80px; }
 
 <div class="section-sub" id="service-label" style="font-size:15px;font-weight:600;color:#5B4A6D;margin-bottom:16px;"></div>
 
-<div id="pack-section">
-<div class="section-title">Elegí tu pack</div>
-<div class="section-sub">Podés reservar una sesión suelta o el pack de 3 con mejor precio.</div>
-<div class="pack-grid" id="pack-grid"></div>
-</div>
-
-<div id="calendar-section" style="display:none;">
-<div class="section-title">Elegí el/los horario/s</div>
-<div class="section-sub" id="calendar-sub"></div>
+<div id="calendar-section">
+<div class="section-title">Elegí el horario</div>
+<div class="section-sub">Tocá el horario que mejor te quede.</div>
 <div class="duration-hint">
 <div class="duration-badge">Cada sesión dura <strong id="duration-label"></strong></div>
-</div>
-<div class="spacing-note" id="spacing-note" style="display:none;">
-💡 Para este tratamiento se recomienda dejar entre <strong>20 y 25 días</strong> entre cada sesión. Es solo una sugerencia — podés elegir las fechas que mejor te queden.
 </div>
 <div class="week-nav">
 <button class="btn-week" onclick="prevWeek()">‹</button>
@@ -168,7 +147,7 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="screen" id="screen-form">
 <div class="container">
 <div class="steps">
-<div class="step done">1. Pack y horario ✓</div>
+<div class="step done">1. Horario ✓</div>
 <div class="step active">2. Tus datos</div>
 <div class="step">3. Confirmar</div>
 </div>
@@ -183,7 +162,7 @@ textarea { resize: vertical; min-height: 80px; }
 <label>Email <span class="opt">(opcional — para recibir confirmación y recordatorios)</span></label>
 <input type="email" id="f-email" placeholder="Ej: maria@gmail.com" />
 <label>Tratamiento</label>
-<input type="text" id="f-subject" placeholder="Ej: PRP Capilar" value="PRP Capilar" />
+<input type="text" id="f-subject" placeholder="Ej: PRP Capilar" />
 <div class="interests-box">
 <div class="interests-title">💡 ¿Hay algún otro tratamiento que te interese?</div>
 <div class="interests-sub">Opcional — nos ayuda a conocer mejor tus necesidades</div>
@@ -200,7 +179,7 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="screen" id="screen-success">
 <div class="container" style="max-width:540px;">
 <div class="steps">
-<div class="step done">1. Pack y horario ✓</div>
+<div class="step done">1. Horario ✓</div>
 <div class="step done">2. Datos ✓</div>
 <div class="step active">3. Confirmar</div>
 </div>
@@ -294,7 +273,7 @@ const BLOCK_MINUTES = 30
 const DEPOSIT_PCT = 0.20
 const LAB_WA = '5491128751300'
 
-// Configuración de cada servicio: días de atención, horario, duración y venta (pack o sesión suelta)
+// Configuración de cada servicio: días de atención, horario, duración y precio por sesión
 function windowsFromDays(days, win) {
   const w = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }
   days.forEach(d => { w[d] = [win] })
@@ -305,38 +284,28 @@ const SERVICES = {
   vulvovaginal: {
     name: 'PRP — Crema regenerativa vulvovaginal',
     duration: 30,
-    hasPack: false,
     price: 50000,
     windows: windowsFromDays([1,2,4,5], { start: '17:00', end: '20:00' })
   },
   colirios: {
     name: 'Colirios de PRP',
     duration: 30,
-    hasPack: false,
     price: 50000,
-    windows: windowsFromDays([1,2,4,5], { start: '17:00', end: '20:00' })
-  },
-  traumatologia: {
-    name: 'PRP Traumatología',
-    duration: 30,
-    hasPack: false,
-    price: 60000,
     windows: windowsFromDays([1,2,4,5], { start: '17:00', end: '20:00' })
   },
   capilar: {
     name: 'PRP Facial/Capilar',
     duration: 60,
-    hasPack: false,
     price: 80000,
     windows: windowsFromDays([3], { start: '16:00', end: '20:00' })
   },
   iprf: {
     name: 'i-PRF',
     duration: 60,
-    hasPack: false,
     price: 100000,
     windows: windowsFromDays([3], { start: '16:00', end: '20:00' })
   }
+}
 
 const params = new URLSearchParams(window.location.search)
 const serviceKey = params.get('servicio')
@@ -352,7 +321,7 @@ const WINDOWS_BY_DAY = currentService.windows
 const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
-let selectedPack = null
+const selectedPack = { sessions: 1, price: currentService.price }
 let selections = []
 let bookedKeys = []
 let blockedKeys = []
@@ -371,43 +340,6 @@ function initService() {
   document.getElementById('service-label').textContent = currentService.name
   document.getElementById('duration-label').textContent = SESSION_MINUTES === 60 ? '1 hora' : '30 minutos'
   document.getElementById('f-subject').value = currentService.name
-
-  if (currentService.hasPack) {
-    document.getElementById('pack-section').style.display = 'block'
-    renderPacks()
-  } else {
-    // Sesión suelta: no hay pantalla de packs, se arma un "pack" implícito de 1 sesión
-    document.getElementById('pack-section').style.display = 'none'
-    selectPack({ id: 'unico', sessions: 1, price: currentService.price, label: currentService.name })
-  }
-}
-
-function renderPacks() {
-  const grid = document.getElementById('pack-grid')
-  grid.innerHTML = ''
-  currentService.packs.forEach(pack => {
-    const card = document.createElement('div')
-    card.className = 'pack-card' + (selectedPack && selectedPack.id === pack.id ? ' selected' : '')
-    card.innerHTML = `
-      <div class="pack-sessions">${pack.label}</div>
-      <div class="pack-price">${formatARS(pack.price)}</div>
-      ${pack.note ? `<div class="pack-note">${pack.note}</div>` : ''}
-      <div class="pack-hint">Seña para reservar: ${formatARS(Math.round(pack.price * DEPOSIT_PCT))} (20%)</div>
-    `
-    card.onclick = () => selectPack(pack)
-    grid.appendChild(card)
-  })
-}
-
-function selectPack(pack) {
-  selectedPack = pack
-  selections = []
-  if (currentService.hasPack) renderPacks()
-  document.getElementById('calendar-section').style.display = 'block'
-  document.getElementById('calendar-sub').textContent = pack.sessions === 1
-    ? 'Elegí el horario de tu sesión.'
-    : `Elegí las ${pack.sessions} fechas de tu pack.`
-  document.getElementById('spacing-note').style.display = pack.sessions > 1 ? 'block' : 'none'
   renderCalendar()
   updatePanel()
 }
@@ -428,10 +360,12 @@ function getWeekDates() {
 async function loadOccupied() {
   const days = getWeekDates()
   const from = dateStr(days[0]), to = dateStr(days[4])
-  const { data: res } = await sb.from('reservations').select('slots').neq('status','cancelled')
+  const { data: res, error: e1 } = await sb.from('reservations').select('slots').neq('status','cancelled')
+  if (e1) console.error('Error leyendo reservas:', e1)
   bookedKeys = []
   ;(res||[]).forEach(r => { if(Array.isArray(r.slots)) r.slots.forEach(k => bookedKeys.push(k)) })
-  const { data: blk } = await sb.from('blocked_slots').select('date,time').gte('date',from).lte('date',to)
+  const { data: blk, error: e2 } = await sb.from('blocked_slots').select('date,time').gte('date',from).lte('date',to)
+  if (e2) console.error('Error leyendo horarios bloqueados:', e2)
   blockedKeys = (blk||[]).map(b => b.date+'_'+b.time)
 }
 
@@ -500,9 +434,8 @@ async function renderCalendar() {
 }
 
 function addSelection(day, dow, time) {
-  if (!selectedPack) return
-  if (selections.length >= selectedPack.sessions) {
-    alert(`Este pack incluye ${selectedPack.sessions} sesión${selectedPack.sessions>1?'es':''}. Sacá una fecha elegida si querés cambiarla.`)
+  if (selections.length >= 1) {
+    alert('Ya elegiste un horario. Tocá el horario elegido para sacarlo y elegir otro.')
     return
   }
   selections.push({ date: dateStr(day), dow, start: time })
@@ -519,12 +452,10 @@ function removeSelection(s) {
 function updatePanel() {
   const panel = document.getElementById('pricing-panel')
   const btn = document.getElementById('btn-continuar')
-  if (!selectedPack) { panel.classList.remove('visible'); return }
   panel.classList.add('visible')
-  const n = selections.length, total = selectedPack.sessions
-  document.getElementById('p-count').textContent = `${n}/${total} sesión${total>1?'es':''} elegida${n===1?'':'s'}`
-  document.getElementById('p-combo').textContent = currentService.hasPack ? `Pack: ${selectedPack.label} · ${formatARS(selectedPack.price)}` : `${formatARS(selectedPack.price)}`
-  btn.disabled = n < total
+  document.getElementById('p-count').textContent = selections.length ? 'Horario elegido ✓' : 'Elegí un horario'
+  document.getElementById('p-combo').textContent = `${currentService.name} · ${formatARS(selectedPack.price)}`
+  btn.disabled = selections.length < 1
 }
 
 function formatDayLabel(dateAndTime) {
@@ -534,7 +465,7 @@ function formatDayLabel(dateAndTime) {
 }
 
 function goToForm() {
-  if (!selectedPack || selections.length < selectedPack.sessions) return
+  if (selections.length < 1) return
   renderFormSummary()
   show('screen-form')
 }
@@ -543,13 +474,12 @@ function goBack() { show('screen-calendar') }
 
 function renderFormSummary() {
   const deposit = Math.round(selectedPack.price * DEPOSIT_PCT)
-  const sorted = [...selections].sort((a,b) => (a.date+a.start).localeCompare(b.date+b.start))
-  const list = sorted.map(s => formatDayLabel(s.date + '_' + s.start)).join('<br>')
+  const list = selections.map(s => formatDayLabel(s.date + '_' + s.start)).join('<br>')
   document.getElementById('form-summary').innerHTML = `
     <div class="summary-title">Resumen de tu reserva</div>
     <div class="summary-slots">${list}</div>
-    <div class="summary-price-detail">${currentService.hasPack ? 'Pack: ' + selectedPack.label : currentService.name}</div>
-    <div class="summary-line"><span>Total</span><span>${formatARS(selectedPack.price)}</span></div>
+    <div class="summary-price-detail">${currentService.name}</div>
+    <div class="summary-line"><span>Valor de la sesión</span><span>${formatARS(selectedPack.price)}</span></div>
     <div class="summary-total"><span>Seña a pagar ahora (20%)</span><span>${formatARS(deposit)}</span></div>
   `
 }
@@ -577,8 +507,7 @@ async function submitReservation() {
   const btn = document.getElementById('btn-submit')
   btn.disabled = true; btn.textContent = 'Guardando...'
 
-  const sorted = [...selections].sort((a,b) => (a.date+a.start).localeCompare(b.date+b.start))
-  const keys = sorted.map(s => s.date + '_' + s.start)
+  const keys = selections.map(s => s.date + '_' + s.start)
   const total = selectedPack.price
   const deposit = Math.round(total * DEPOSIT_PCT)
 
@@ -587,7 +516,7 @@ async function submitReservation() {
     phone, email: email || null, subject,
     interests: interests || null,
     slots: keys,
-    pack_sessions: selectedPack.sessions,
+    pack_sessions: 1,
     total_amount: total,
     deposit_amount: deposit,
     status: 'pending_payment'
@@ -602,18 +531,16 @@ async function submitReservation() {
   }
 
   currentICS = generateICS(student, keys)
-
-  currentICS = generateICS(student, keys)
   const dayList = keys.map(formatDayLabel).join('\n')
   const waMsg = encodeURIComponent(
-    `Hola! Reservé ${currentService.hasPack ? `un pack de ${selectedPack.sessions} sesión${selectedPack.sessions>1?'es':''}` : 'un turno'} de ${currentService.name} para ${student}.\n` +
-    `Turnos:\n${dayList}\n` +
+    `Hola! Reservé un turno de ${currentService.name} para ${student}.\n` +
+    `Turno:\n${dayList}\n` +
     `Seña (20%): ${formatARS(deposit)}\n` +
     `Te adjunto el comprobante de transferencia.`
   )
 
   document.getElementById('success-detail').textContent = `${currentService.name} para ${student}`
-  document.getElementById('success-combo').textContent = currentService.hasPack ? `${selectedPack.label} · ${keys.length} turno${keys.length>1?'s':''}` : currentService.name
+  document.getElementById('success-combo').textContent = currentService.name
   document.getElementById('success-amount').textContent = formatARS(deposit)
   document.getElementById('success-total').textContent = formatARS(total)
   document.getElementById('success-remaining').textContent = formatARS(total - deposit)
