@@ -20,8 +20,21 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
 .service-top { display: flex; align-items: flex-start; gap: 12px; }
 .service-emoji { font-size: 26px; line-height: 1; }
 .service-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: #3A2E42; }
+.service-sub { font-size: 12.5px; color: #7C6E83; margin-top: 2px; }
 .service-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .meta-badge { background: #F5F0E8; border-radius: 20px; padding: 5px 12px; font-size: 12.5px; color: #4A3F52; }
+.service-desc { font-size: 13.5px; color: #4A3F52; line-height: 1.65; }
+.service-note { font-size: 12.5px; color: #5B4A6D; background: #F1DDD3; border-radius: 10px; padding: 8px 12px; line-height: 1.5; }
+.service-more summary { cursor: pointer; font-size: 13px; font-weight: 500; color: #5B4A6D; list-style: none; width: fit-content; }
+.service-more summary::-webkit-details-marker { display: none; }
+.service-more summary::after { content: ' +'; }
+.service-more[open] summary::after { content: ' −'; }
+.service-more summary:focus-visible { outline: 2px solid #C6A54D; outline-offset: 3px; border-radius: 4px; }
+.service-more-body { margin-top: 10px; font-size: 13.5px; line-height: 1.7; color: #4A3F52; background: #FBF7ED; border-radius: 10px; padding: 12px 14px; }
+.service-more-body p + p, .service-more-body ul + p { margin-top: 8px; }
+.service-more-body ul { margin: 8px 0 0 18px; }
+.service-more-body li + li { margin-top: 4px; }
+.service-more-body strong { color: #5B4A6D; }
 .service-price { font-size: 15px; font-weight: 600; color: #5B4A6D; margin-top: 2px; }
 .btn-service { align-self: flex-start; background: #5B4A6D; color: white; border: none; border-radius: 10px; padding: 11px 20px; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: inherit; text-decoration: none; }
 .btn-service:hover { background: #453856; }
@@ -60,6 +73,13 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
       </div>
     </div>
   </div>
+  <p class="service-desc">Preparación personalizada de una crema vulvovaginal combinada con plasma rico en plaquetas (PRP), obtenido a partir de la propia sangre de la paciente.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Se orienta al cuidado y la regeneración de los tejidos de la zona vulvovaginal, con el objetivo de favorecer su hidratación, elasticidad, lubricación y bienestar íntimo.</p>
+    </div>
+  </details>
   <div class="service-price">$50.000 la sesión</div>
   <a class="btn-service" href="reservar.html?servicio=vulvovaginal">Reservar este servicio →</a>
 </div>
@@ -76,6 +96,14 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
       </div>
     </div>
   </div>
+  <p class="service-desc">Colirios elaborados a partir de componentes autólogos de la sangre, destinados a determinadas afecciones de la superficie ocular, como ojo seco o úlceras corneales.</p>
+  <div class="service-note">Su uso debe estar indicado por un oftalmólogo.</div>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Por su composición, pueden contribuir a la lubricación y reparación de la superficie ocular en pacientes seleccionados.</p>
+    </div>
+  </details>
   <div class="service-price">$50.000 la sesión</div>
   <a class="btn-service" href="reservar.html?servicio=colirios">Reservar este servicio →</a>
 </div>
@@ -85,6 +113,7 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
     <div class="service-emoji">🦵</div>
     <div>
       <div class="service-name">PRP Traumatología</div>
+      <div class="service-sub">PRP en articulaciones</div>
       <div class="service-meta">
         <span class="meta-badge">Lun · Mar · Jue · Vie</span>
         <span class="meta-badge">17 a 20 hs</span>
@@ -92,6 +121,13 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
       </div>
     </div>
   </div>
+  <p class="service-desc">Se prepara plasma rico en plaquetas del propio paciente en estrictas condiciones de bioseguridad, para aplicarlo mediante infiltración en una articulación seleccionada por el médico tratante.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Busca favorecer el entorno biológico de reparación de los tejidos y contribuir al alivio de los síntomas en determinadas afecciones musculoesqueléticas.</p>
+    </div>
+  </details>
   <div class="service-price">Consultar</div>
   <a class="btn-service" href="https://wa.me/5491128751300?text=Hola!%20Quiero%20consultar%20por%20PRP%20Traumatolog%C3%ADa." target="_blank">Consultar por WhatsApp →</a>
 </div>
@@ -108,6 +144,17 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
       </div>
     </div>
   </div>
+  <p class="service-desc">Tratamiento bioestimulador que aprovecha los factores de crecimiento presentes en las plaquetas para acompañar los procesos naturales de reparación de los tejidos.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <ul>
+        <li><strong>Facial:</strong> se utiliza como complemento en protocolos orientados a mejorar la calidad, textura y aspecto de la piel.</li>
+        <li><strong>Capilar:</strong> se aplica en el cuero cabelludo para favorecer el entorno folicular y contribuir a mejorar la densidad capilar en determinados tipos de alopecia.</li>
+      </ul>
+      <p>El protocolo se adapta a las características y necesidades de cada paciente.</p>
+    </div>
+  </details>
   <div class="service-price">$80.000 la sesión</div>
   <a class="btn-service" href="reservar.html?servicio=capilar">Reservar este servicio →</a>
 </div>
@@ -117,6 +164,7 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
     <div class="service-emoji">✨</div>
     <div>
       <div class="service-name">i-PRF</div>
+      <div class="service-sub">Fibrina rica en plaquetas inyectable</div>
       <div class="service-meta">
         <span class="meta-badge">Miércoles</span>
         <span class="meta-badge">16 a 20 hs</span>
@@ -124,6 +172,14 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
       </div>
     </div>
   </div>
+  <p class="service-desc">Concentrado autólogo obtenido a partir de la propia sangre mediante un protocolo específico de centrifugación, que permite obtener una matriz de fibrina con plaquetas y otros componentes celulares.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Al polimerizar, esta matriz puede actuar como una estructura biológica que favorece la liberación gradual de mediadores bioactivos.</p>
+      <p>Se utiliza en determinados protocolos de bioestimulación y regeneración, según la zona y la indicación clínica.</p>
+    </div>
+  </details>
   <div class="service-price">$100.000 la sesión</div>
   <a class="btn-service" href="reservar.html?servicio=iprf">Reservar este servicio →</a>
 </div>
