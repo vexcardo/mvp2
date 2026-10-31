@@ -44,4 +44,165 @@ body { font-family: 'Poppins', sans-serif; background: #F7F0E4; color: #3A2E42; 
 .consultas-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: #5B4A6D; }
 .consultas-text { font-size: 13.5px; color: #4A3F52; line-height: 1.6; }
 .btn-consultas { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #5B4A6D; border: 1.5px solid #5B4A6D; border-radius: 10px; padding: 11px 20px; font-size: 14.5px; font-weight: 600; font-family: inherit; text-decoration: none; transition: background .2s, color .2s; }
-.btn-consultas:hover { background: #5B4A6D; color:
+.btn-consultas:hover { background: #5B4A6D; color: #F7F0E4; }
+.btn-consultas:focus-visible { outline: 2px solid #C6A54D; outline-offset: 3px; }
+
+.link-back { text-align: center; font-size: 13px; color: #A79AA8; margin-top: 8px; }
+.link-back a { color: #5B4A6D; font-weight: 500; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+<svg width="30" height="30" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+<circle cx="17" cy="17" r="15.5" stroke="#5B4A6D" stroke-width="1.3"/>
+<path d="M17 8C13 13 11 16.2 11 19.5C11 22.5 13.7 25 17 25C20.3 25 23 22.5 23 19.5C23 16.2 21 13 17 8Z" stroke="#5B4A6D" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M14 14.5C15.4 15.6 15.4 16.9 14 18C15.4 19.1 15.4 20.4 14 21.5" stroke="#C6A54D" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M20 14.5C18.6 15.6 18.6 16.9 20 18C18.6 19.1 18.6 20.4 20 21.5" stroke="#5B4A6D" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
+<div>
+<div class="header-logo">Laboratorio Bioquímico</div>
+<div class="header-sub">DE REGENERACIÓN CELULAR</div>
+</div>
+</div>
+
+<div class="container">
+<div class="page-title">Elegí el servicio que querés reservar</div>
+<div class="page-sub">Cada servicio tiene sus propios días y horarios de atención.</div>
+
+<div class="service-card">
+  <div class="service-top">
+    <div class="service-emoji">🌸</div>
+    <div>
+      <div class="service-name">PRP — Crema regenerativa vulvovaginal</div>
+      <div class="service-meta">
+        <span class="meta-badge">Lun · Mar · Jue · Vie</span>
+        <span class="meta-badge">17 a 20 hs</span>
+        <span class="meta-badge">30 min</span>
+      </div>
+    </div>
+  </div>
+  <p class="service-desc">Preparación personalizada de una crema vulvovaginal combinada con plasma rico en plaquetas (PRP), obtenido a partir de la propia sangre de la paciente.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Se orienta al cuidado y la regeneración de los tejidos de la zona vulvovaginal, con el objetivo de favorecer su hidratación, elasticidad, lubricación y bienestar íntimo.</p>
+    </div>
+  </details>
+  <div class="service-price">$50.000 la sesión</div>
+  <a class="btn-service" href="reservar.html?servicio=vulvovaginal">Reservar este servicio →</a>
+</div>
+
+<div class="service-card">
+  <div class="service-top">
+    <div class="service-emoji">👁️</div>
+    <div>
+      <div class="service-name">Colirios de PRP</div>
+      <div class="service-meta">
+        <span class="meta-badge">Lun · Mar · Jue · Vie</span>
+        <span class="meta-badge">17 a 20 hs</span>
+        <span class="meta-badge">30 min</span>
+      </div>
+    </div>
+  </div>
+  <p class="service-desc">Colirios elaborados a partir de componentes autólogos de la sangre, destinados a determinadas afecciones de la superficie ocular, como ojo seco o úlceras corneales.</p>
+  <div class="service-note">Su uso debe estar indicado por un oftalmólogo.</div>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Por su composición, pueden contribuir a la lubricación y reparación de la superficie ocular en pacientes seleccionados.</p>
+    </div>
+  </details>
+  <div class="service-price">$50.000 la sesión</div>
+  <a class="btn-service" href="reservar.html?servicio=colirios">Reservar este servicio →</a>
+</div>
+
+<div class="service-card">
+  <div class="service-top">
+    <div class="service-emoji">🦵</div>
+    <div>
+      <div class="service-name">PRP Traumatología</div>
+      <div class="service-sub">PRP en articulaciones</div>
+      <div class="service-meta">
+        <span class="meta-badge">Lun · Mar · Jue · Vie</span>
+        <span class="meta-badge">17 a 20 hs</span>
+        <span class="meta-badge">30 min</span>
+      </div>
+    </div>
+  </div>
+  <p class="service-desc">Se prepara plasma rico en plaquetas del propio paciente en estrictas condiciones de bioseguridad, para aplicarlo mediante infiltración en una articulación seleccionada por el médico tratante.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Busca favorecer el entorno biológico de reparación de los tejidos y contribuir al alivio de los síntomas en determinadas afecciones musculoesqueléticas.</p>
+    </div>
+  </details>
+  <div class="service-price">Consultar</div>
+  <a class="btn-service" href="https://wa.me/5493794586268?text=Hola!%20Quiero%20consultar%20por%20PRP%20Traumatolog%C3%ADa." target="_blank">Consultar por WhatsApp →</a>
+</div>
+
+<div class="service-card">
+  <div class="service-top">
+    <div class="service-emoji">💆‍♀️</div>
+    <div>
+      <div class="service-name">PRP Facial/Capilar</div>
+      <div class="service-meta">
+        <span class="meta-badge">Miércoles</span>
+        <span class="meta-badge">16 a 20 hs</span>
+        <span class="meta-badge">1 hora</span>
+      </div>
+    </div>
+  </div>
+  <p class="service-desc">Tratamiento bioestimulador que aprovecha los factores de crecimiento presentes en las plaquetas para acompañar los procesos naturales de reparación de los tejidos.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <ul>
+        <li><strong>Facial:</strong> se utiliza como complemento en protocolos orientados a mejorar la calidad, textura y aspecto de la piel.</li>
+        <li><strong>Capilar:</strong> se aplica en el cuero cabelludo para favorecer el entorno folicular y contribuir a mejorar la densidad capilar en determinados tipos de alopecia.</li>
+      </ul>
+      <p>El protocolo se adapta a las características y necesidades de cada paciente.</p>
+    </div>
+  </details>
+  <div class="service-price">$80.000 la sesión</div>
+  <a class="btn-service" href="reservar.html?servicio=capilar">Reservar este servicio →</a>
+</div>
+
+<div class="service-card">
+  <div class="service-top">
+    <div class="service-emoji">✨</div>
+    <div>
+      <div class="service-name">i-PRF</div>
+      <div class="service-sub">Fibrina rica en plaquetas inyectable</div>
+      <div class="service-meta">
+        <span class="meta-badge">Miércoles</span>
+        <span class="meta-badge">16 a 20 hs</span>
+        <span class="meta-badge">1 hora</span>
+      </div>
+    </div>
+  </div>
+  <p class="service-desc">Concentrado autólogo obtenido a partir de la propia sangre mediante un protocolo específico de centrifugación, que permite obtener una matriz de fibrina con plaquetas y otros componentes celulares.</p>
+  <details class="service-more">
+    <summary>Más información</summary>
+    <div class="service-more-body">
+      <p>Al polimerizar, esta matriz puede actuar como una estructura biológica que favorece la liberación gradual de mediadores bioactivos.</p>
+      <p>Se utiliza en determinados protocolos de bioestimulación y regeneración, según la zona y la indicación clínica.</p>
+    </div>
+  </details>
+  <div class="service-price">$100.000 la sesión</div>
+  <a class="btn-service" href="reservar.html?servicio=iprf">Reservar este servicio →</a>
+</div>
+
+<div class="consultas-box">
+  <div class="consultas-title">¿Tenés dudas?</div>
+  <p class="consultas-text">Escribinos y te respondemos tus consultas sobre los tratamientos.</p>
+  <a class="btn-consultas" href="https://wa.me/5493794594829?text=Hola!%20Quisiera%20hacer%20una%20consulta." target="_blank" rel="noopener">💬 Consultas por WhatsApp</a>
+</div>
+
+<div class="link-back">
+¿Ya tenés turnos reservados? → <a href="mis-turnos.html">Ver mis turnos</a>
+</div>
+</div>
+
+</body>
+</html>
